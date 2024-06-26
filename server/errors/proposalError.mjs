@@ -2,9 +2,7 @@ const PROPOSALS_NOT_FOUND = "Proposals not found"
 const PROPOSALS_ALREADY_EXISTS = "Proposal already exists"
 const UNAUTHORIZED_USER = "Another user's proposal"
 
-/**
- * Rappresenta l'erroe che appare se non ci sono proposte
- */
+
 export class ProposalsNotFoundError extends Error{
     constructor(){
         super();

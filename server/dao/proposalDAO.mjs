@@ -6,6 +6,11 @@ import Proposal from "../components/Proposal.mjs";
 import db from "../db/db.mjs"
 import { ProposalsNotFoundError, ProposalAlreadyExistsError, UnauthorizedUserError } from "../errors/proposalError.mjs";
 
+/**
+ * Funzione che mappa le righe delle get in un array
+ * @param {*} rows righe di una get
+ * @returns array di Proposal
+ */
 function mapRowsToProposal(rows){
     return rows.map(row => new Proposal(row.id, row.user_id, row.description, row.cost, row.approved))
 }
@@ -117,4 +122,25 @@ export default function ProposalDAO() {
             })
         })
     }
+
+    /**
+     * Recupera tutte le proposte presenti nel database
+     * @returns La promise si risolve in un array di proposte
+     */
+    this.getAllProposals = () => {
+        return new Promise((resolve, reject) => {
+            let sql = "SELECT * FROM Proposal";
+            db.all(sql, (err, rows) => {
+                if(err) {
+                    reject(err);
+                } else if (rows.length === 0){
+                    reject(new ProposalsNotFoundError())
+                } else {
+                    const proposals = mapRowsToProposal(rows)
+                    resolve(proposals);
+                }
+            })
+        })
+    }
+
 }

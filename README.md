@@ -10,23 +10,58 @@
 
 ## API Server
 
-- POST `/api/something`
-  - request parameters and request body content
-  - response body content
-- GET `/api/something`
-  - request parameters
-  - response body content
-- POST `/api/something`
-  - request parameters and request body content
-  - response body content
-- ...
+- POST `/api/sessions`
+  - Description: Esegue il login di un utente con le credenziali fornite
+  - Request body: 
+  ``` json
+  {
+    "username": "francesca.bianchi@gmail.com",
+    "password": "abcd"
+  }
+  ```
+  - Response: `200 OK` (success)
+  - Response body: 
+  ``` json
+  {
+    "id": 1,
+    "username": "francesca.bianchi@gmail.com",
+    "name": "Francesca",
+    "surname": "Bianchi",
+    "token": "some-auth-token"
+  }
+  ```
+  - Error responses: `401 Unauthorized` (invalid credentials), `422 Unprocessable Entity` (missing or invalid input), `503 Service Unavailable` (database error)
+
+- GET `/api/sessions/current`
+  - Description: Controlla se l'utente è ancora loggato e restituisce le informazioni dell'utente corrente
+  - Request body: _None_
+  - Response: `200 OK` (success)
+  - Response body:
+  ``` json
+  {
+    "id": 1,
+    "username": "francesca.bianchi@gmail.com",
+    "name": "Francesca",
+    "surname": "Bianchi",
+    "token": "some-auth-token"
+  }
+  ```
+   - Error responses: `401 Unauthorized` (invalid credentials), `503 Service Unavailable` (database error)
+
+- DELETE `/api/sessions/current`
+  - Description: Esegue il logout dell'utente corrente, terminando la sessione
+  - Request body: _None_
+  - Response: `200 OK` (success)
+  - Response body: _None_
+  - Error responses: `401 Unauthorized` (invalid credentials), `503 Service Unavailable` (database error)
+
+
 
 - GET `/api/proposals/:userId`
   - Description: Recupera tutte le proposte create da uno specifico utente
   - Request body: _None_
   - Response: `200 OK` (success)
   - Response body: Array di proposte
-
   ``` json
   [
     {
@@ -46,7 +81,6 @@
     ...
   ]
   ```
-
   - Error responses: `500 Internal Server Error` (generic error), `404 Proposals not found`
 
 - POST `/api/proposals`
@@ -73,7 +107,6 @@
       "approved": 0
     }
   ```
-
   - Error responses: `404 Proposal Already Exists` (proposal already exists), `422 Unprocessable Entity` (invalid input), `503 Service Unavailable` (database error)
 
 - PUT `/api/proposals/:id`
@@ -108,8 +141,32 @@
   - Response body: _None_
   - Error responses:  `404 Another user's proposal` (proposal of another user), `503 Service Unavailable` (database error)
 
+- GET `/api/proposals`
+  - Description: Recupera tutte le proposte presenti nel db
+  - Request body: _None_
+  - Response: `200 OK` (success)
+  - Response body: Array di proposte
 
-  
+  ``` json
+  [
+    {
+      "id": 1,
+      "userId": 2,
+      "description": "Acquisto di nuovi libri per la biblioteca comunitaria",
+      "cost": 500,
+      "approved": 0
+    },
+    {
+      "id": 3,
+      "userId": 2,
+      "description": "Pulizia villa comunale",
+      "cost": 200,
+      "approved": 1
+    },
+    ...
+  ]
+  ```
+  - Error responses: `500 Internal Server Error` (generic error), `404 Proposals not found`
 
 
 ## Database Tables

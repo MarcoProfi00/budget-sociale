@@ -1,4 +1,24 @@
-## Retrieving all proposal by userId
+# This file can be used for thesting the API with a dedicated Visual Studio Code extension.
+
+## Execute Log In
+POST http://localhost:3001/api/sessions HTTP/1.1
+content-type: application/json
+
+{
+    "username": "francesca.bianchi@gmail.com",
+    "password": "abcd"
+}
+###
+
+## Controllo se l'utente è ancora loggato
+GET http://localhost:3001/api/sessions/current HTTP/1.1
+###
+
+## Execute Log Out.
+DELETE http://localhost:3001/api/sessions/current HTTP/1.1
+###
+
+## Recupera tutte le proposte di uno user dallo userId
 GET http://localhost:3001/api/proposals/2 HTTP/1.1
 ###
 
@@ -8,8 +28,8 @@ content-type: application/json
 
 {
     "user_id": 2,
-    "description": "Pulizia fondale marino",
-    "cost": 450
+    "description": "Costruzione campi sportivi",
+    "cost": 1800
 }
 ###
 
@@ -19,11 +39,15 @@ content-type: application/json
 
 {
     "user_id": 2,
-    "description": "Acquisto di nuovi libri per la biblioteca comunale",
+    "description": "Acquisto nuovi libri per la biblioteca comunale",
     "cost": 400
 }
 ###
 
 ## Eliminazione terza proposta
-DELETE http://localhost:3001/api/proposals/3 HTTP/1.1
+DELETE http://localhost:3001/api/proposals/10 HTTP/1.1
+###
+
+## Retrieving all proposal
+GET http://localhost:3001/api/proposals HTTP/1.1
 ###

@@ -1,12 +1,17 @@
-// imports
 import express from 'express';
 import morgan from 'morgan';
 import {check, validationResult} from 'express-validator'; // validation middleware
 import ProposalDAO from "./dao/proposalDAO.mjs";
 import Proposal from './components/Proposal.mjs';
 import { ProposalAlreadyExistsError, ProposalsNotFoundError, UnauthorizedUserError } from './errors/proposalError.mjs';
+import UserDAO from './dao/userDAO.mjs';
+import passport from 'passport';
+import LocalStrategy from 'passport-local';
+import session from 'express-session'; //middleware per gestire le sessioni in Express.
+import cors from 'cors';
 
 const proposalDAO = new ProposalDAO();
+const userDAO = new UserDAO();
 
 // init express and set up the middlewares
 const app = new express();
@@ -16,15 +21,113 @@ app.use(morgan('dev'));
 app.use(express.json());
 
 
+/** Passport **/
+/**
+ * Funzione per trovare user con credenziali fornite
+ * Se non viene trovato alcun utente, la funzione ritorna un callback con false e un messaggio di errore.
+ * Se l'utente viene trovato, viene restituito al callback. Le informazioni dell'utente saranno memorizzate nella sessione.
+ */
+passport.use(new LocalStrategy(async function verify(username, password, callback){
+  const user = await userDAO.getUserByCredentials(username, password)
+  if(!user)
+    return callback(null, false, "Incorrect username or password")
+
+  return callback(null, user)
+}))
+
+/**
+ * Serializzazione dell'utente nella sessione
+ * serializeUser: Questa funzione prende l'oggetto utente restituito dalla strategia locale e lo memorizza nella sessione.
+ */
+passport.serializeUser(function (user, callback) {
+  callback(null, user)
+})
+
+/**
+ * Deserializzazione dell'utente dalla sessione
+ * Partendo dai dati in sessione, estraiamo il corrente utente loggato
+ */
+passport.deserializeUser(function (user, callback) {
+  return callback(null, user); // this will be available in req.user
+});
+
+/** Creating the session */
+
+app.use(session({
+    secret: "This is a very secret information used to initialize the session!",
+    resave: false, //Impedisce di salvare la sessione se non ci sono state modifiche.
+    saveUninitialized: false, // Impedisce di salvare una sessione vuota.
+}));
+//Configura Passport per utilizzare l'autenticazione basata su sessione
+//Questo middleware è responsabile di recuperare l'utente autenticato dalla sessione e rendere disponibile 
+//req.isAuthenticated().
+app.use(passport.authenticate('session'));
+
+/**
+ * Defining authentication verification middleware
+ */
+const isLoggedIn = (req, res, next) => {
+  if(req.isAuthenticated()) {
+    return next();
+  }
+  return res.status(401).json({error: 'Not authorized'});
+}
+
+/** Users APIs **/
+
+/**
+ * Route usata per fare il login
+ * POST /api/sessions
+ */
+app.post('/api/sessions', function(req, res, next) {
+  passport.authenticate('local', (err, user, info) => {
+    if(err)
+      return next(err);
+      if(!user) {
+        // display wrong login messages
+        return res.status(401).json({ error: info });
+      }
+      // success, perform the login and extablish a login session
+      req.login(user, (err) => {
+        if (err)
+          return next(err);
+
+        // req.user contiene l'user autenticato, inviamo indietro le info dello user
+        return res.json(req.user);
+      })
+  })(req, res, next);
+});
+
+/**
+ * Route controlla se l'utente è loggato o meno
+ * GET /api/sessions/current
+ */
+app.get('/api/sessions/current', (req, res) => {
+  if(req.isAuthenticated()) {
+    res.status(200).json(req.user);}
+  else
+    res.status(401).json({error: 'Not authenticated'});
+});
+
+/**
+ * Route per loggin out
+ * DELETE /api/session/current
+ */
+app.delete('/api/sessions/current', (req, res) => {
+  req.logout(() => {
+    res.end();
+  });
+});
+
+
 /** Proposal APIs **/
 //FASE 1
 
 /**
  * Get di tutte le proposta di un utente dato il suo id
  * GET /api/proposals/:id
- * TO DO: mettere il controllo utente loggato
  */
-app.get('/api/proposals/:userId', async (req, res) => {
+app.get('/api/proposals/:userId', isLoggedIn, async (req, res) => {
   try{
     const result = await proposalDAO.getProposalById(req.params.userId);
     if(result.error){
@@ -46,7 +149,7 @@ app.get('/api/proposals/:userId', async (req, res) => {
  * POST /api/proposals
  * TO DO: mettere il controllo utente loggato
  */
-app.post('/api/proposals', [
+app.post('/api/proposals', isLoggedIn, [
   check('user_id').isNumeric().notEmpty(),
   check('description').isString().notEmpty(),
   check('cost').isNumeric().notEmpty()
@@ -76,7 +179,7 @@ app.post('/api/proposals', [
  * PUT /api/proposals/:id
  * TO DO: mettere il controllo utente loggato
  */
-app.put('/api/proposals/:id', [
+app.put('/api/proposals/:id', isLoggedIn, [
   check('description').isString().notEmpty(),
   check('cost').isNumeric().notEmpty()
 ], async (req, res) => {
@@ -85,11 +188,10 @@ app.put('/api/proposals/:id', [
   if (!errors.isEmpty()) {
     return res.status(422).json({ errors: errors.array() });
   }
-  const userId = req.body.user_id; //per il momento poi farò la isloggedin
-  const proposal = new Proposal(req.params.id, /*per adesso*/userId, req.body.description, req.body.cost, 0);
+  const proposal = new Proposal(req.params.id, req.user.id, req.body.description, req.body.cost, 0);
 
   try{
-    const result = await proposalDAO.updateProposal(/*per adesso*/userId, proposal.id, proposal);
+    const result = await proposalDAO.updateProposal(req.user.id, proposal.id, proposal);
     if(result.error){
       res.status(404).json(result);
     } else {
@@ -104,10 +206,10 @@ app.put('/api/proposals/:id', [
   }
 })
 
-app.delete('/api/proposals/:id', async(req, res) => {
-  const userIdd = 2 //per il momento poi farò la isloggedin
+
+app.delete('/api/proposals/:id', isLoggedIn, async(req, res) => {
   try {
-    await proposalDAO.deleteProposal(userIdd, req.params.id);
+    await proposalDAO.deleteProposal(req.user.id, req.params.id);
     res.status(200).end();
   } catch (err) {
     if(err instanceof UnauthorizedUserError){
@@ -117,6 +219,27 @@ app.delete('/api/proposals/:id', async(req, res) => {
     }
   }
 })
+
+/**
+ * Get di tutte le proposte presenti nel db
+ * GET /api/proposals
+ */
+app.get('/api/proposals', async (req, res) => {
+  try{
+    const result = await proposalDAO.getAllProposals()
+    if(result.error){
+      res.status(404).json(result)
+    } else {
+      res.json(result);
+    }
+  } catch (err) {
+    if (err instanceof ProposalsNotFoundError) {
+      res.status(err.code).json({ error: err.message });
+    } else {
+      res.status(500).end();
+    }
+  }
+});
 
 // activate the server
 app.listen(port, () => {
