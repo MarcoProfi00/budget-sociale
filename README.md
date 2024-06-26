@@ -21,6 +21,97 @@
   - response body content
 - ...
 
+- GET `/api/proposals/:userId`
+  - Description: Recupera tutte le proposte create da uno specifico utente
+  - Request body: _None_
+  - Response: `200 OK` (success)
+  - Response body: Array di proposte
+
+  ``` json
+  [
+    {
+      "id": 1,
+      "userId": 2,
+      "description": "Acquisto di nuovi libri per la biblioteca comunitaria",
+      "cost": 500,
+      "approved": 0
+    },
+    {
+      "id": 3,
+      "userId": 2,
+      "description": "Pulizia villa comunale",
+      "cost": 200,
+      "approved": 1
+    },
+    ...
+  ]
+  ```
+
+  - Error responses: `500 Internal Server Error` (generic error), `404 Proposals not found`
+
+- POST `/api/proposals`
+  - Description: Aggiunge una nuova proposta di uno specifico user
+  - Request body: descrizione della proposta da aggiungere
+
+  ``` json
+    {
+      "user_id": 2,
+      "description": "Pulizia fondale marino",
+      "cost": 450
+    }
+    ```
+    
+    - Response: `200 OK` (success)
+    - Response body: Intera proposta aggiunta
+    
+    ``` json
+    {
+      "id": 7,
+      "userId": 2,
+      "description": "Pulizia fondale marino",
+      "cost": 450,
+      "approved": 0
+    }
+  ```
+
+  - Error responses: `404 Proposal Already Exists` (proposal already exists), `422 Unprocessable Entity` (invalid input), `503 Service Unavailable` (database error)
+
+- PUT `/api/proposals/:id`
+  - Description: Modifica la proposta di uno specificato utente
+  - Request body: descrizione della proposta da modificare
+
+  ``` json
+  {
+    "description": "Acquisto di nuovi libri per la biblioteca comunale",
+    "cost": 300
+  }
+  ```
+
+  - Response: `200 OK` (success)
+  - Response body: Intera proposta aggiunta
+  
+  ``` json
+  {
+    "id": "1",
+    "userId": 2,
+    "description": "Acquisto di nuovi libri per la biblioteca comunale",
+    "cost": 300,
+    "approved": 0
+  }
+  ```
+  - Error responses: `404 Another user's proposal` (proposal of another user), `422 Unprocessable Entity` (invalid input), `503 Service Unavailable` (database error)
+
+- DELETE `/api/proposals/:id`
+  - Description: Elimina la proposta di un determinato utente
+  - Request body: _None_
+  - Response: `200 OK` (success)
+  - Response body: _None_
+  - Error responses:  `404 Another user's proposal` (proposal of another user), `503 Service Unavailable` (database error)
+
+
+  
+
+
 ## Database Tables
 
 - Table `users` - contains xx yy zz
