@@ -2,8 +2,8 @@ import express from 'express';
 import morgan from 'morgan';
 import {check, validationResult} from 'express-validator'; // validation middleware
 import ProposalDAO from "./dao/proposalDAO.mjs";
-import Proposal from './components/Proposal.mjs';
-import { ProposalAlreadyExistsError, ProposalsNotFoundError, UnauthorizedUserError } from './errors/proposalError.mjs';
+import Proposal, { Vote } from './components/Proposal.mjs';
+import { ProposalAlreadyExistsError, ProposalsNotFoundError, UnauthorizedUserError, UnauthorizedUserErrorVote } from './errors/proposalError.mjs';
 import UserDAO from './dao/userDAO.mjs';
 import passport from 'passport';
 import LocalStrategy from 'passport-local';
@@ -147,7 +147,6 @@ app.get('/api/proposals/:userId', isLoggedIn, async (req, res) => {
 /**
  * Crea una nuova proposta, fornendo le informazioni necessarie
  * POST /api/proposals
- * TO DO: mettere il controllo utente loggato
  */
 app.post('/api/proposals', isLoggedIn, [
   check('user_id').isNumeric().notEmpty(),
@@ -177,7 +176,6 @@ app.post('/api/proposals', isLoggedIn, [
 /**
  * Modifica una proposta dato il suo id, fornendo le informazioni necessarie
  * PUT /api/proposals/:id
- * TO DO: mettere il controllo utente loggato
  */
 app.put('/api/proposals/:id', isLoggedIn, [
   check('description').isString().notEmpty(),
@@ -206,7 +204,10 @@ app.put('/api/proposals/:id', isLoggedIn, [
   }
 })
 
-
+/**
+ * Elimina la proposta in base al suo id
+ * DELETE /api/proposals/:id
+ */
 app.delete('/api/proposals/:id', isLoggedIn, async(req, res) => {
   try {
     await proposalDAO.deleteProposal(req.user.id, req.params.id);
@@ -240,6 +241,38 @@ app.get('/api/proposals', async (req, res) => {
     }
   }
 });
+
+/**
+ * Vota una proposta creando una riga nella tabella Vote
+ * POST /api/proposals/:id/vote
+ */
+app.post('/api/proposals/:id/vote', isLoggedIn, [
+  check('score').isInt({ min: 1, max: 3 }).notEmpty()
+], async (req, res) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
+  const vote = new Vote(req.user.id, req.params.id, req.body.score);
+  try{
+    const result = await proposalDAO.voteProposal(req.user.id, vote.proposalId, vote.score);
+    if(result.error){
+      res.status(404).json(result);
+    } else {
+      res.json(result);
+    }
+  } catch (err) {
+    if(err instanceof UnauthorizedUserErrorVote){
+      res.status(err.code).json({ error: err.message });
+    } else {
+      res.status(503).json({error: `Database error during the vote of proposal ${req.params.id}: ${err}`});
+    }
+  }
+
+
+
+})
 
 // activate the server
 app.listen(port, () => {

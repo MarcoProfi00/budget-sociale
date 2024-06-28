@@ -4,7 +4,7 @@
 
 import Proposal from "../components/Proposal.mjs";
 import db from "../db/db.mjs"
-import { ProposalsNotFoundError, ProposalAlreadyExistsError, UnauthorizedUserError } from "../errors/proposalError.mjs";
+import { ProposalsNotFoundError, ProposalAlreadyExistsError, UnauthorizedUserError, UnauthorizedUserErrorVote } from "../errors/proposalError.mjs";
 
 /**
  * Funzione che mappa le righe delle get in un array
@@ -58,9 +58,19 @@ export default function ProposalDAO() {
                     db.run(sql, [proposal.userId, proposal.description, proposal.cost, proposal.approved], function (err) {
                     if (err){
                         reject(err);
+                    } else {
+                        proposal.id = this.lastID;
+                        resolve(proposal)
+                        /*//creo la riga nella tabella n senza impostare user_id che sarà quello che vota
+                        sql = "INSERT INTO Vote (proposal_id, score) VALUES (?, 0)"; //score = 0 default
+                        db.run(sql, [proposal.id], function(err) {
+                            if(err) {
+                                reject(err);
+                            }
+                            resolve(proposal);
+                        })
+                        */
                     }
-                    proposal.id = this.lastID;
-                    resolve(proposal);
                     });
                 }
             });
@@ -100,6 +110,12 @@ export default function ProposalDAO() {
         });
     };
 
+    /**
+     * Elimina la proposta dato il suo e userId dell'utente che l'ha creata
+     * @param {*} userId id dell'utente che l'ha creata
+     * @param {*} id id della proposta
+     * @returns La promise si risolve eliminando la proposta e ritornando il numero di cambiamenti
+     */
     this.deleteProposal = (userId, id) => {
         return new Promise((resolve, reject) => {
             let sql = "SELECT * FROM Proposal WHERE id = ? AND user_id = ?";
@@ -109,13 +125,23 @@ export default function ProposalDAO() {
                 } else if(!row){
                     reject(new UnauthorizedUserError())
                 } else {
-                    sql = "DELETE FROM Proposal WHERE id = ? AND user_id = ?";
-                    db.run(sql, [id, userId], function (err) {
+                    /*//elimino prima la riga nella tabella più interna (Vote) per i costains
+                    sql = "DELETE FROM Vote WHERE proposal_id = ? AND user_id = ?";
+                    db.run(sql, [id, userId], function (err){
                         if(err) {
-                            reject(err);
+                            reject(err)
                         } else {
-                            console.log(this.changes)
-                            resolve(this.changes); //risolve con il numero di cambiamenti
+                         */
+                            //elimino la riga nella tabella più esterna (Proposal)
+                            sql = "DELETE FROM Proposal WHERE id = ? AND user_id = ?";
+                            db.run(sql, [id, userId], function(err){
+                                if(err) {
+                                    reject(err);
+                                } else {
+                                    console.log(this.changes)
+                                    resolve(this.changes);
+                                //}
+                           // })
                         }
                     })
                 }
@@ -141,6 +167,38 @@ export default function ProposalDAO() {
                 }
             })
         })
+    }
+
+    /**
+     * Vota una proposta dato il suo id controllando che non sia la propria proposta
+     * @param {*} userId id dell'utente che vota
+     * @param {*} id id della proposta da votare
+     * @param {*} score score 1 - 2 - 3
+     * @returns La promise si risolve ritornando lo score se la votazione va a buon fine
+     */
+    this.voteProposal = (userId, id, score) => { //userId -> utente che la chiama
+        return new Promise((resolve, reject) => {
+            //controllo se la proposta è la propria
+            let sql = "SELECT * FROM Proposal WHERE id = ? AND user_id = ?";
+            db.get(sql, [id, userId], (err, row) => {
+                if(err) {
+                    reject(err);
+                } else if(!row){
+                    //se non trova la riga vuol dire che la proposta non è la propria e quindi si può votare
+                    sql = "INSERT INTO Vote (user_id, proposal_id, score) VALUES (?, ?, ?)";
+                    db.run(sql, [userId, id, score], function (err){
+                        if(err){
+                            reject(err)
+                        } else {
+                            resolve(score)
+                        }
+                    })
+                } else {
+                    reject(new UnauthorizedUserErrorVote())
+                }
+            })
+            
+        });
     }
 
 }

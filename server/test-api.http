@@ -1,11 +1,32 @@
 # This file can be used for thesting the API with a dedicated Visual Studio Code extension.
 
+
+## Execute Log In
+POST http://localhost:3001/api/sessions HTTP/1.1
+content-type: application/json
+
+{
+    "username": "marco.profilo@gmail.com",
+    "password": "1234"
+}
+###
+
 ## Execute Log In
 POST http://localhost:3001/api/sessions HTTP/1.1
 content-type: application/json
 
 {
     "username": "francesca.bianchi@gmail.com",
+    "password": "abcd"
+}
+###
+
+## Execute Log In
+POST http://localhost:3001/api/sessions HTTP/1.1
+content-type: application/json
+
+{
+    "username": "federico.grasso@gmail.com",
     "password": "abcd"
 }
 ###
@@ -45,9 +66,18 @@ content-type: application/json
 ###
 
 ## Eliminazione terza proposta
-DELETE http://localhost:3001/api/proposals/10 HTTP/1.1
+DELETE http://localhost:3001/api/proposals/14 HTTP/1.1
 ###
 
 ## Retrieving all proposal
 GET http://localhost:3001/api/proposals HTTP/1.1
+###
+
+## Vota la seconda proposta
+POST http://localhost:3001/api/proposals/2/vote HTTP/1.1
+content-type: application/json
+
+{
+    "score": 3
+}
 ###

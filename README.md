@@ -107,7 +107,7 @@
       "approved": 0
     }
   ```
-  - Error responses: `404 Proposal Already Exists` (proposal already exists), `422 Unprocessable Entity` (invalid input), `503 Service Unavailable` (database error)
+  - Error responses: `409 Proposal Already Exists` (proposal already exists), `422 Unprocessable Entity` (invalid input), `503 Service Unavailable` (database error)
 
 - PUT `/api/proposals/:id`
   - Description: Modifica la proposta di uno specificato utente
@@ -132,14 +132,14 @@
     "approved": 0
   }
   ```
-  - Error responses: `404 Another user's proposal` (proposal of another user), `422 Unprocessable Entity` (invalid input), `503 Service Unavailable` (database error)
+  - Error responses: `403 Another user's proposal` (proposal of another user), `422 Unprocessable Entity` (invalid input), `503 Service Unavailable` (database error)
 
 - DELETE `/api/proposals/:id`
   - Description: Elimina la proposta di un determinato utente
   - Request body: _None_
   - Response: `200 OK` (success)
   - Response body: _None_
-  - Error responses:  `404 Another user's proposal` (proposal of another user), `503 Service Unavailable` (database error)
+  - Error responses:  `403 Another user's proposal` (proposal of another user), `503 Service Unavailable` (database error)
 
 - GET `/api/proposals`
   - Description: Recupera tutte le proposte presenti nel db
@@ -168,6 +168,17 @@
   ```
   - Error responses: `500 Internal Server Error` (generic error), `404 Proposals not found`
 
+- POST `/api/proposals/:id/vote`
+  - Description: Vota la proposta non propria inserendo una riga nella tabella Vote
+  - Request body: 
+  ``` json
+  {
+    "score": 3
+  }
+  ```
+  - Response: `200 OK` (success)
+  - Response body: score appena aggiunto
+  - Error responses: `500 Internal Server Error` (generic error), `403 You cannot vote your proposal`
 
 ## Database Tables
 
