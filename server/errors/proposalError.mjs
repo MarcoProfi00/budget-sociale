@@ -2,6 +2,7 @@ const PROPOSALS_NOT_FOUND = "Proposals not found"
 const PROPOSALS_ALREADY_EXISTS = "Proposal already exists"
 const UNAUTHORIZED_USER = "Another user's proposal"
 const UNAUTHORIZED_USER_VOTE = "You cannot vote your proposal"
+const VOTE_NOT_FOUND = "User has not voted on any proposal"
 
 
 export class ProposalsNotFoundError extends Error{
@@ -35,5 +36,13 @@ export class UnauthorizedUserErrorVote extends Error{
         this.code = 403;
     }
 }
+export class VoteNotFoundError extends Error{
+    constructor(){
+        super();
+        this.message = VOTE_NOT_FOUND;
+        this.code = 404;
+    }
+}
+
 
 

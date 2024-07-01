@@ -3,7 +3,7 @@ import morgan from 'morgan';
 import {check, validationResult} from 'express-validator'; // validation middleware
 import ProposalDAO from "./dao/proposalDAO.mjs";
 import Proposal, { Vote } from './components/Proposal.mjs';
-import { ProposalAlreadyExistsError, ProposalsNotFoundError, UnauthorizedUserError, UnauthorizedUserErrorVote } from './errors/proposalError.mjs';
+import { ProposalAlreadyExistsError, ProposalsNotFoundError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError } from './errors/proposalError.mjs';
 import UserDAO from './dao/userDAO.mjs';
 import passport from 'passport';
 import LocalStrategy from 'passport-local';
@@ -221,11 +221,12 @@ app.delete('/api/proposals/:id', isLoggedIn, async(req, res) => {
   }
 })
 
+//Fase 2
 /**
  * Get di tutte le proposte presenti nel db
  * GET /api/proposals
  */
-app.get('/api/proposals', async (req, res) => {
+app.get('/api/proposals', isLoggedIn, async (req, res) => {
   try{
     const result = await proposalDAO.getAllProposals()
     if(result.error){
@@ -269,10 +270,25 @@ app.post('/api/proposals/:id/vote', isLoggedIn, [
       res.status(503).json({error: `Database error during the vote of proposal ${req.params.id}: ${err}`});
     }
   }
-
-
-
 })
+
+app.get('/api/proposals/voted/:id', isLoggedIn, async (req, res) => {
+  try{
+    const result = await proposalDAO.getOwnPreference(req.params.id)
+    if(result.error){
+      res.status(404).json(result)
+    } else {
+      res.json(result);
+    }
+  } catch (err) {
+    if (err instanceof VoteNotFoundError) {
+      res.status(err.code).json({ error: err.message });
+    } else {
+      res.status(500).end();
+    }
+  }
+});
+
 
 // activate the server
 app.listen(port, () => {

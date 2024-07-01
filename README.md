@@ -180,6 +180,32 @@
   - Response body: score appena aggiunto
   - Error responses: `500 Internal Server Error` (generic error), `403 You cannot vote your proposal`
 
+- GET `/api/proposals/voted/:id`
+  - Description: Recupera tutte le proposte votate da uno specifico utente
+  - Request body: _None_
+  - Response: `200 OK` (success)
+  - Response body: Array di proposte
+
+  ``` json
+  [
+    {
+      "id": 2,
+      "description": "Costruzione piscina giochi olimpici",
+      "cost": 1800,
+      "score": 3
+    },
+    {
+      "id": 15,
+      "description": "Pulizia fondale marino",
+      "cost": 500,
+      "score": 3
+    }
+  ]
+  ```
+ - Error responses: `500 Internal Server Error` (generic error), `404 User has not voted on any proposal`
+
+ 
+
 ## Database Tables
 
 - Table `users` - contains xx yy zz

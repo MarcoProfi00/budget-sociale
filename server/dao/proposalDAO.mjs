@@ -2,9 +2,9 @@
  * Data Access Object (DAO) module for accessing proposal data
  */
 
-import Proposal from "../components/Proposal.mjs";
+import Proposal, { ProposalWithVote } from "../components/Proposal.mjs";
 import db from "../db/db.mjs"
-import { ProposalsNotFoundError, ProposalAlreadyExistsError, UnauthorizedUserError, UnauthorizedUserErrorVote } from "../errors/proposalError.mjs";
+import { ProposalsNotFoundError, ProposalAlreadyExistsError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError } from "../errors/proposalError.mjs";
 
 /**
  * Funzione che mappa le righe delle get in un array
@@ -13,6 +13,10 @@ import { ProposalsNotFoundError, ProposalAlreadyExistsError, UnauthorizedUserErr
  */
 function mapRowsToProposal(rows){
     return rows.map(row => new Proposal(row.id, row.user_id, row.description, row.cost, row.approved))
+}
+
+function mapRowsToProposalWithScore(rows){
+    return rows.map(row => new ProposalWithVote(row.id, row.description, row.cost, row.score))
 }
 
 
@@ -197,8 +201,32 @@ export default function ProposalDAO() {
                     reject(new UnauthorizedUserErrorVote())
                 }
             })
-            
         });
     }
+
+    /**
+     * Recupera le proposte votate da un utente dato il suo id
+     * @param {*} userId id dell'utente che vota
+     * @returns La promise si risolve in un array di proposte contentente (id_proposta, description, cost e vote)
+     */
+    this.getOwnPreference = (userId) => {
+        return new Promise((resolve, reject) => {
+            // Query che ritorna la lista di proposal votate da un utente (userId)
+            let sql = `SELECT Proposal.id, Proposal.description, Proposal.cost, Vote.score 
+                       FROM Proposal, Vote 
+                       WHERE Proposal.id = Vote.proposal_id AND Vote.user_id = ?;`;
+            db.all(sql, [userId], (err, rows) => {
+                if (err) {
+                    reject(err);
+                } else if (rows.length === 0) {
+                    reject(new VoteNotFoundError());
+                } else {
+                    const proposals = mapRowsToProposalWithScore(rows);
+                    resolve(proposals);
+                }
+            });
+        });
+    }
+
 
 }

@@ -17,3 +17,10 @@ export function Vote(userId, proposalId, score = 0) {
     this.score = score;
 }
 
+export function ProposalWithVote(id, description, cost, score) {
+    this.id = id;
+    this.description = description;
+    this.cost = cost;
+    this.score = score;
+}
+
