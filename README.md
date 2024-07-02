@@ -93,7 +93,7 @@
       "description": "Pulizia fondale marino",
       "cost": 450
     }
-    ```
+  ```
     
     - Response: `200 OK` (success)
     - Response body: Intera proposta aggiunta
@@ -204,7 +204,109 @@
   ```
  - Error responses: `500 Internal Server Error` (generic error), `404 User has not voted on any proposal`
 
- 
+- DELETE `/api/proposals/voted/delete/:id`
+  - Description: Elimina la preferenza espressa precedentemente da un determinato utente
+  - Request body: _None_
+  - Response: `200 OK` (success)
+  - Response body: _None_
+  - Error responses:  `403 Another user's proposal` (proposal of another user), `503 Service Unavailable` (database error)
+
+- GET `/api/proposal/ordered`
+  - Description: Ordina le proposte presenti nel database in base al total_score (somma degli score della stessa proposa) in ordine decrescente
+  - Request body: _None_
+  - Response: `200 OK` (success)
+  - Response body: Array di proposte
+  ``` json
+  [
+    {
+      "id": 2,
+      "userId": 1,
+      "description": "Costruzione piscina giochi olimpici",
+      "cost": 1800,
+      "approved": 0,
+      "total_score": 6
+    },
+    {
+      "id": 1,
+      "userId": 2,
+      "description": "Acquisto nuovi libri per la biblioteca comunale",
+      "cost": 400,
+      "approved": 0,
+      "total_score": 3
+    },
+    ...
+  ]
+  ```
+  - Error responses: `500 Internal Server Error` (generic error), `404 Proposals not found`
+
+- PUT `/api/proposal/approve`
+  - Description: Approva le proposte che rientrano nel budget
+  - Request body: budget 
+  ``` json
+    {
+      "budget": 3000
+    }
+  ```
+  - Response: `200 OK` (success)
+  - Response body: true
+  - Error responses: `500 Internal Server Error` (generic error)
+
+- GET `/api/proposal/approved`
+  - Description: Recupera le proposte approvate presenti nel database in base al total_score (somma degli score della stessa proposa) in ordine decrescente
+  - Request body: _None_
+  - Response: `200 OK` (success)
+  - Response body: Array di proposte
+  ``` json
+  [
+    {
+      "id": 2,
+      "description": "Costruzione piscina giochi olimpici",
+      "member_name": "Marco Profilo",
+      "cost": 1800,
+      "total_score": 6
+    },
+    {
+      "id": 1,
+      "description": "Acquisto nuovi libri per la biblioteca comunale",
+      "member_name": "Francesca Bianchi",
+      "cost": 400,
+      "total_score": 3
+    },
+    ...
+  ]
+  ```
+  - Error responses: `500 Internal Server Error` (generic error), `404 Proposals not found`
+
+- GET `/api/proposal/notApproved`
+  - Description: Recupera le proposte non approvate presenti nel database in base al total_score (somma degli score della stessa proposa) in ordine decrescente
+  - Request body: _None_
+  - Response: `200 OK` (success)
+  - Response body: Array di proposte
+  ``` json
+  [
+    {
+      "id": 17,
+      "description": "Costruzione area giochi per bambini",
+      "cost": 1150,
+      "total_score": 2
+    },
+    {
+      "id": 16,
+      "description": "Costruzione campi sportivi",
+      "cost": 1800,
+      "total_score": 0
+    }
+  ]
+  ```
+  - Error responses: `500 Internal Server Error` (generic error), `404 Proposals not found`
+
+- DELETE `/api/proposal/restart/`
+  - Description: Elimina la tabella Vote e la tabella Proposal
+  - Request body: _None_
+  - Response: `200 OK` (success)
+  - Response body: true
+  - Error responses:  `403 Only the admin can do the reset` (not admin), `503 Service Unavailable` (database error)
+
 
 ## Database Tables
 

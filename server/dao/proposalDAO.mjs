@@ -2,15 +2,11 @@
  * Data Access Object (DAO) module for accessing proposal data
  */
 
-import Proposal, { ProposalWithVote } from "../components/Proposal.mjs";
+import Proposal, { ProposalWithVote, ProposalsApproved, ProposalsNotApproved, ProposalsWhithSumOfScore } from "../components/Proposal.mjs";
 import db from "../db/db.mjs"
-import { ProposalsNotFoundError, ProposalAlreadyExistsError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError } from "../errors/proposalError.mjs";
+import { ProposalsNotFoundError, ProposalAlreadyExistsError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError, NotAdminError } from "../errors/proposalError.mjs";
 
-/**
- * Funzione che mappa le righe delle get in un array
- * @param {*} rows righe di una get
- * @returns array di Proposal
- */
+
 function mapRowsToProposal(rows){
     return rows.map(row => new Proposal(row.id, row.user_id, row.description, row.cost, row.approved))
 }
@@ -19,6 +15,17 @@ function mapRowsToProposalWithScore(rows){
     return rows.map(row => new ProposalWithVote(row.id, row.description, row.cost, row.score))
 }
 
+function mapRowsToProposalsWithSumOfScore(rows){
+    return rows.map(row => new ProposalsWhithSumOfScore(row.id, row.user_id, row.description, row.cost, row.approved, row.total_score))
+}
+
+function mapRowsToProposalsApproved(rows){
+    return rows.map(row => new ProposalsApproved(row.id, row.description, row.member_name, row.cost, row.total_score))
+}
+
+function mapRowsToProposalsNotApproved(rows){
+    return rows.map(row => new ProposalsNotApproved(row.id, row.description, row.cost, row.total_score))
+}
 
 export default function ProposalDAO() {
     
@@ -64,16 +71,7 @@ export default function ProposalDAO() {
                         reject(err);
                     } else {
                         proposal.id = this.lastID;
-                        resolve(proposal)
-                        /*//creo la riga nella tabella n senza impostare user_id che sarà quello che vota
-                        sql = "INSERT INTO Vote (proposal_id, score) VALUES (?, 0)"; //score = 0 default
-                        db.run(sql, [proposal.id], function(err) {
-                            if(err) {
-                                reject(err);
-                            }
-                            resolve(proposal);
-                        })
-                        */
+                        resolve(proposal)  
                     }
                     });
                 }
@@ -129,23 +127,12 @@ export default function ProposalDAO() {
                 } else if(!row){
                     reject(new UnauthorizedUserError())
                 } else {
-                    /*//elimino prima la riga nella tabella più interna (Vote) per i costains
-                    sql = "DELETE FROM Vote WHERE proposal_id = ? AND user_id = ?";
-                    db.run(sql, [id, userId], function (err){
+                    sql = "DELETE FROM Proposal WHERE id = ? AND user_id = ?";
+                    db.run(sql, [id, userId], function(err){
                         if(err) {
-                            reject(err)
+                            reject(err);
                         } else {
-                         */
-                            //elimino la riga nella tabella più esterna (Proposal)
-                            sql = "DELETE FROM Proposal WHERE id = ? AND user_id = ?";
-                            db.run(sql, [id, userId], function(err){
-                                if(err) {
-                                    reject(err);
-                                } else {
-                                    console.log(this.changes)
-                                    resolve(this.changes);
-                                //}
-                           // })
+                            resolve(this.changes);
                         }
                     })
                 }
@@ -228,5 +215,222 @@ export default function ProposalDAO() {
         });
     }
 
+    /**
+     * Elimina la preferenza a una proposta precedentemente espressa
+     * @param {*} userId id dell'utente che ha espesso la preferenza e vuole eliminarla
+     * @param {*} proposalId id della proposta
+     * @returns La promise si risolve eliminando la proposta e ritornando il numero di cambiamenti
+     */
+    this.deleteOwnPreference = (userId, proposalId) => {
+        return new Promise((resolve, reject) => {
+            //query per verificare se è possibile eliminare lo score della proposta
+            let sql = "SELECT * FROM Vote WHERE user_id = ? AND proposal_id = ?";
+            db.get(sql, [userId, proposalId], (err, row) => {
+                if(err) {
+                    reject(err);
+                    //se la riga è vuota vuol dire che non è possibile eliminare lo score di quella proposta perchè non è stata votata dallo user 
+                } else if(!row){
+                    reject(new UnauthorizedUserError())
+                } else {
+                    //query per eliminare la riga della votazione
+                    sql = "DELETE FROM Vote WHERE user_id = ? AND proposal_id = ?";
+                    db.run(sql, [userId, proposalId], function (err) {
+                        if(err){
+                            reject(err)
+                        } else {
+                            resolve(this.changes);
+                        }
+                    })
+                }
+            })
+        })
+    }
 
+    /**
+     * Recupera le proposte in ordine decrescente di total_score (score uguali vengono sommati)
+     * @returns La promise si risolve ritornando l'array delle proposte
+     */
+    this.getProposalsOrderedToScore = () => {
+        return new Promise((resolve, reject) => {
+            let sql = `
+                SELECT
+                    Proposal.id,
+                    Proposal.user_id,
+                    Proposal.description,
+                    Proposal.cost,
+                    Proposal.approved,
+                    COALESCE(SUM(Vote.score), 0) AS total_score
+                FROM
+                    Proposal
+                LEFT JOIN
+                    Vote ON Proposal.id = Vote.proposal_id
+                GROUP BY
+                    Proposal.id, Proposal.user_id, Proposal.description, Proposal.cost, Proposal.approved
+                ORDER BY
+                    total_score DESC;
+            `;
+            db.all(sql, (err, rows) => {
+                if (err) {
+                    console.error('Error in getProposalsOrdered:', err);
+                    reject(err);
+                } else if (rows.length === 0) {
+                    reject(new ProposalsNotFoundError());
+                } else {
+                    const proposals = mapRowsToProposalsWithSumOfScore(rows);
+                    resolve(proposals);
+                }
+            });
+        });
+    };
+
+    /**
+     * Approva le proposte in base al budget
+     * Richiama la promise "getProposalsOrderedToScore" in await per ordinare le proposte secondo il total_score in ordine decrescente
+     * Crea una transazione in cui in un ciclo for in cui viene aggiornato il campo approved delle proposte che rientrano nel budget
+     * @param {*} budget budget da rispettare
+     * @returns La promise si risolve ritornando true se l'approvazione va a buon fine
+     */
+    this.approveProposals = (budget) => {
+        return new Promise(async (resolve, reject) => {
+            let totalCost = 0;
+            const selectedProposals = [];
+            //richiamo la promise precedente per ottenere l'array di proposte ordinate in base allo score totale
+            const proposals = await this.getProposalsOrderedToScore();
+            
+            for (let i = 0; i < proposals.length; i++){
+                if(totalCost + proposals[i].cost <= budget){
+                    selectedProposals.push(proposals[i]);
+                    totalCost += proposals[i].cost;
+                }
+            }
+            let sql = "BEGIN TRANSACTION;";
+            for(let i = 0; i < selectedProposals.length; i++){
+                //query per aggiornare il campo approved delle proposte all'interno del budget
+                sql += `UPDATE Proposal SET approved = 1 WHERE id = '${selectedProposals[i].id}';`
+            }
+            sql += "COMMIT;";
+            db.exec(sql, function(err) {
+                if(err){
+                    reject(err)
+                } else {
+                    resolve(true)
+                }
+            })
+        })
+    }
+
+    /**
+     * Recupera le proposte approvate (approved = 1) in ordine decrescende di total_cost
+     * @returns La promise si risolve ritornando l'array delle proposte
+     */
+    this.getProposalApproved = () => {
+        return new Promise((resolve, reject) => {
+            let sql = `
+                SELECT 
+                    Proposal.id,
+                    Proposal.description,
+                    User.name || ' ' || User.surname AS member_name,	    
+                    Proposal.cost,
+                    COALESCE(SUM(Vote.score), 0) AS total_score
+                FROM 
+                    Proposal
+                LEFT JOIN 
+                    Vote ON Proposal.id = Vote.proposal_id
+                JOIN
+                    User ON Proposal.user_id = User.id
+                WHERE
+                    Proposal.approved = 1
+                GROUP BY 
+                    Proposal.id, Proposal.description, User.name, User.surname, Proposal.cost
+                ORDER BY 
+                    total_score DESC;
+            `;
+            db.all(sql, (err, rows) => {
+                if(err) {
+                    console.error('Error in getProposalsApproved:', err);
+                    reject(err);
+                } else if (rows.length === 0) {
+                    reject(new ProposalsNotFoundError());
+                } else {
+                    const proposals = mapRowsToProposalsApproved(rows);
+                    resolve(proposals);
+                }
+            })
+        })
+    }
+
+    /**
+     * Recupera le proposte non approvate (approved = 0) in ordine decrescende di total_cost
+     * @returns La promise si risolve ritornando l'array delle proposte
+     */
+    this.getProposalNotApproved = () => {
+        return new Promise((resolve, reject) => {
+            let sql = `
+                SELECT 
+                    Proposal.id,
+                    Proposal.description,    
+                    Proposal.cost,
+                    COALESCE(SUM(Vote.score), 0) AS total_score
+                FROM 
+                    Proposal
+                LEFT JOIN 
+                    Vote ON Proposal.id = Vote.proposal_id
+                WHERE
+                    Proposal.approved = 0
+                GROUP BY 
+                    Proposal.id, Proposal.description, Proposal.cost
+                ORDER BY 
+                    total_score DESC;
+            `;
+            db.all(sql, (err, rows) => {
+                if(err) {
+                    console.error('Error in getProposalsApproved:', err);
+                    reject(err);
+                } else if (rows.length === 0) {
+                    reject(new ProposalsNotFoundError());
+                } else {
+                    const proposals = mapRowsToProposalsNotApproved(rows);
+                    resolve(proposals);
+                }
+            })
+        })
+    }
+
+    /**
+     * Elimina le proposte e le votazioni (restart the process)
+     * @param {*} userId id dell'utente che effettua il restart (deve essere admin)
+     * @returns La promise si risolve ritornando true se l'eliminazione delle righe è andato a buon fine
+     */
+    this.restartProcess = (userId) => {
+        return new Promise((resolve, reject) => {
+            //query per verificare che l'utente è l'admin
+            let sql = `SELECT * FROM User WHERE user.id = ? AND User.role = 'Admin'`;
+            db.get(sql, [userId], (err, row) => {
+                if(err){
+                    reject(err);
+                    //se la riga è vuota vuol dire che non è un admin
+                } else if(!row){
+                    reject(new NotAdminError())
+                } else {
+                    //query per svuotare la tabella Vote
+                    sql = "DELETE FROM Vote;";
+                    db.run(sql, function(err) {
+                        if(err){
+                            reject(err)
+                        } else {
+                            //query per svuotare la tabella Proposal
+                            sql = "DELETE FROM Proposal;";
+                            db.run(sql, function(err) {
+                                if(err){
+                                    reject(err)
+                                } else {
+                                    resolve(true)
+                                }
+                            })
+                        }
+                    })
+                }
+            })
+        })
+    }
 }

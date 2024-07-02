@@ -3,7 +3,7 @@ import morgan from 'morgan';
 import {check, validationResult} from 'express-validator'; // validation middleware
 import ProposalDAO from "./dao/proposalDAO.mjs";
 import Proposal, { Vote } from './components/Proposal.mjs';
-import { ProposalAlreadyExistsError, ProposalsNotFoundError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError } from './errors/proposalError.mjs';
+import { NotAdminError, ProposalAlreadyExistsError, ProposalsNotFoundError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError } from './errors/proposalError.mjs';
 import UserDAO from './dao/userDAO.mjs';
 import passport from 'passport';
 import LocalStrategy from 'passport-local';
@@ -149,7 +149,7 @@ app.get('/api/proposals/:userId', isLoggedIn, async (req, res) => {
  * POST /api/proposals
  */
 app.post('/api/proposals', isLoggedIn, [
-  check('user_id').isNumeric().notEmpty(),
+  //check('user_id').isNumeric().notEmpty(),
   check('description').isString().notEmpty(),
   check('cost').isNumeric().notEmpty()
 ], async (req, res) => {
@@ -159,7 +159,7 @@ app.post('/api/proposals', isLoggedIn, [
     return res.status(422).json({ errors: errors.array() });
   }
 
-  const proposal = new Proposal(undefined, req.body.user_id, req.body.description, req.body.cost, 0)
+  const proposal = new Proposal(undefined, req.user.id, req.body.description, req.body.cost, 0)
 
   try {
     const result = await proposalDAO.addProposal(proposal)
@@ -178,8 +178,8 @@ app.post('/api/proposals', isLoggedIn, [
  * PUT /api/proposals/:id
  */
 app.put('/api/proposals/:id', isLoggedIn, [
-  check('description').isString().notEmpty(),
-  check('cost').isNumeric().notEmpty()
+  check('description').isString(),
+  check('cost').isNumeric()
 ], async (req, res) => {
   const errors = validationResult(req);
 
@@ -216,7 +216,7 @@ app.delete('/api/proposals/:id', isLoggedIn, async(req, res) => {
     if(err instanceof UnauthorizedUserError){
       res.status(err.code).json({ error: err.message });
     } else {
-      res.status(503).json({error: `Database error during the deletion of film ${req.params.id}: ${err} `});
+      res.status(503).json({error: `Database error during the deletion of proposal ${req.params.id}: ${err} `});
     }
   }
 })
@@ -272,6 +272,10 @@ app.post('/api/proposals/:id/vote', isLoggedIn, [
   }
 })
 
+/**
+ * Get delle proposte votate da uno user
+ * GET /api/proposals/voted/:id
+ */
 app.get('/api/proposals/voted/:id', isLoggedIn, async (req, res) => {
   try{
     const result = await proposalDAO.getOwnPreference(req.params.id)
@@ -288,6 +292,118 @@ app.get('/api/proposals/voted/:id', isLoggedIn, async (req, res) => {
     }
   }
 });
+
+
+/**
+ * Rimuove lo score di una proposta precedentemente votata da un utente
+ * DELETE api/proposals/voted/:id
+ */
+app.delete('/api/proposals/voted/delete/:id', isLoggedIn, async(req, res) => {
+  try{
+    await proposalDAO.deleteOwnPreference(req.user.id, req.params.id);
+    res.status(200).end();
+  } catch (err) {
+    if(err instanceof UnauthorizedUserError){
+      res.status(err.code).json({ error: err.message });
+    } else {
+    res.status(503).json({error: `Database error during the deletion of score of proposal ${req.params.id}: ${err} `});
+    }
+  }
+});
+
+/**
+ * Ordina le proposte in base al total_score in ordine decrescente (API intermedia per l'approvazione)
+ * GET /api/proposal/ordered
+ */
+app.get('/api/proposal/ordered', isLoggedIn, async (req, res) => {
+  try{
+    const result = await proposalDAO.getProposalsOrderedToScore()
+    if(result.error) {
+      res.status(404).json(result)
+    } else {
+      res.json(result)
+    }
+  } catch (err){
+    if(err instanceof ProposalsNotFoundError) {
+      res.status(err.code).json({ error: err.message });
+    } else {
+      res.status(500).end();
+    }
+  }
+})
+
+/**
+ * Approva le proposte che rientrano nel budget
+ * PUT /api/proposal/approve
+ */
+app.put('/api/proposal/approve', isLoggedIn, async (req, res) => {
+  //const budget = 2000; //per ora passo il budget come parametro
+  try{
+    const result = await proposalDAO.approveProposals(req.body.budget)
+    if(result.error){
+      res.status(404).json(result);
+    } else {
+      res.json(result);
+    }
+  } catch(err) {
+    res.status(503).json({error: `Database error during the update of approved field's proposal`})
+  }
+})
+
+/**
+ * Recupera le proposte approvate in ordine decrescente di total_score
+ * GET /api/proposal/approved
+ */
+app.get('/api/proposal/approved', isLoggedIn, async (req, res) => {
+  try{
+    const result = await proposalDAO.getProposalApproved()
+    if(result.error) {
+      res.status(404).json(result)
+    } else {
+      res.json(result)
+    }
+  } catch (err){
+    if(err instanceof ProposalsNotFoundError) {
+      res.status(err.code).json({ error: err.message });
+    } else {
+      res.status(500).end();
+    }
+  }
+})
+
+/**
+ * Recupera le proposte non approvate in ordine decrescente di total_score
+ * GET /api/proposal/notApproved
+ */
+app.get('/api/proposal/notApproved', isLoggedIn, async (req, res) => {
+  try{
+    const result = await proposalDAO.getProposalNotApproved()
+    if(result.error) {
+      res.status(404).json(result)
+    } else {
+      res.json(result)
+    }
+  } catch (err){
+    if(err instanceof ProposalsNotFoundError) {
+      res.status(err.code).json({ error: err.message });
+    } else {
+      res.status(500).end();
+    }
+  }
+})
+
+app.delete('/api/proposal/restart', isLoggedIn, async(req, res) => {
+  try{
+    await proposalDAO.restartProcess(req.user.id);
+    res.status(200).end();
+  } catch (err) {
+    if(err instanceof NotAdminError){
+      res.status(err.code).json({ error: err.message });
+    } else {
+      res.status(503).json({error: `Database error during the deletion of proposal`});
+    }
+  }
+})
 
 
 // activate the server

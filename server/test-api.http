@@ -48,8 +48,7 @@ POST http://localhost:3001/api/proposals HTTP/1.1
 content-type: application/json
 
 {
-    "user_id": 2,
-    "description": "Costruzione campi sportivi",
+    "description": "Bonifica zona paludosa",
     "cost": 1800
 }
 ###
@@ -59,29 +58,58 @@ PUT http://localhost:3001/api/proposals/1 HTTP/1.1
 content-type: application/json
 
 {
-    "user_id": 2,
-    "description": "Acquisto nuovi libri per la biblioteca comunale",
-    "cost": 400
+    "description": "Acquisto nuovi libri per la biblioteca1",
+    "cost": 600
 }
 ###
 
-## Eliminazione terza proposta
-DELETE http://localhost:3001/api/proposals/14 HTTP/1.1
+## Eliminazione prima proposta
+DELETE http://localhost:3001/api/proposals/1 HTTP/1.1
 ###
 
 ## Recupera tutte le proposte
 GET http://localhost:3001/api/proposals HTTP/1.1
 ###
 
-## Vota la seconda proposta
-POST http://localhost:3001/api/proposals/2/vote HTTP/1.1
+## Vota la terza proposta
+POST http://localhost:3001/api/proposals/3/vote HTTP/1.1
 content-type: application/json
 
 {
-    "score": 3
+    "score": 2
 }
 ###
 
 ## Recupera le proposte votate dall'utente
 GET http://localhost:3001/api/proposals/voted/2 HTTP/1.1
 ###
+
+## Elimina la votazione di una proposta precedentemente votata dall'utente
+DELETE http://localhost:3001/api/proposals/voted/delete/3 HTTP/1.1
+###
+
+## Recupera le proposte ordinate in base allo score_totale
+GET http://localhost:3001/api/proposal/ordered HTTP/1.1
+###
+
+## Approva proposte in base al budget
+PUT http://localhost:3001/api/proposal/approve HTTP/1.1
+content-type: application/json
+
+{
+    "budget": 4500
+}
+###
+
+## Recupera le proposte approvate ordinate in base allo score_totale
+GET http://localhost:3001/api/proposal/approved HTTP/1.1
+###
+
+## Recupera le proposte non approvate ordinate in base allo score_totale
+GET http://localhost:3001/api/proposal/notApproved HTTP/1.1
+###
+
+## Riavvia il processo - Eliminazione delle proposte
+DELETE http://localhost:3001/api/proposal/restart HTTP/1.1
+###
+

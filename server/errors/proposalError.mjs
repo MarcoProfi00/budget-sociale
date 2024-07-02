@@ -3,6 +3,7 @@ const PROPOSALS_ALREADY_EXISTS = "Proposal already exists"
 const UNAUTHORIZED_USER = "Another user's proposal"
 const UNAUTHORIZED_USER_VOTE = "You cannot vote your proposal"
 const VOTE_NOT_FOUND = "User has not voted on any proposal"
+const NOT_ADMIN = "Only the admin can do the reset"
 
 
 export class ProposalsNotFoundError extends Error{
@@ -36,11 +37,20 @@ export class UnauthorizedUserErrorVote extends Error{
         this.code = 403;
     }
 }
+
 export class VoteNotFoundError extends Error{
     constructor(){
         super();
         this.message = VOTE_NOT_FOUND;
         this.code = 404;
+    }
+}
+
+export class NotAdminError extends Error{
+    constructor(){
+        super();
+        this.message = NOT_ADMIN;
+        this.code = 403;
     }
 }
 
