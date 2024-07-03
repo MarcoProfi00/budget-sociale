@@ -1,77 +1,86 @@
-import React from 'react';
-import { Container, Row, Col, Form, Button } from 'react-bootstrap';
+import React, { useState, useContext } from 'react';
+import PropTypes from 'prop-types';
+import { Container, Col, Navbar, Form, Button, Alert, Row} from 'react-bootstrap';
+import { usePhase } from '../contexts/PhaseContext';
+import FeedbackContext from '../contexts/FeedbackContext';
+import API from '../API';
 
+const Phase0Page = ({ user }) => {
+  const { fase, setFase, avanzareFase } = usePhase();
+  const { setFeedback } = useContext(FeedbackContext);
+  const [budget, setBudget] = useState('');
+  const [showAlert, setShowAlert] = useState(false);
 
-export function AdminLayout({ user, fase }) {
-    return (
-        <Container>
-            <Row>
-                <Col>
-                    <nav className="navbar navbar-light bg-light">
-                        <span className="navbar-brand">Welcome, {user.name} {user.surname} {user.role}</span>
-                    </nav>
-                </Col>
-            </Row>
-            <Row>
-                <Col>
-                    <nav className="navbar navbar-light bg-light">
-                        <span className="navbar-brand">Phase: {fase}</span>
-                    </nav>
-                </Col>
-            </Row>
-            <Row>
-                <Col>
-                    <Form>
-                        <Form.Group controlId="budgetForm">
-                            <Form.Label>Insert Budget</Form.Label>
-                            <Form.Control type="text" placeholder="Enter budget" />
-                        </Form.Group>
-                        <Button variant="primary">Submit</Button>
-                    </Form>
-                </Col>
-            </Row>
-        </Container>
-    );
-}
+  const handleBudgetChange = (e) => {
+    setBudget(e.target.value);
+  };
 
-// Layout per il membro
-export function MemberLayout({ user, fase }) {
-    return (
-        <Container>
-            <Row>
-                <Col>
-                    <nav className="navbar navbar-light bg-light">
-                        <span className="navbar-brand">Welcome, {user.name} {user.surname} {user.role}</span>
-                    </nav>
-                </Col>
-            </Row>
-            <Row>
-                <Col>
-                    <nav className="navbar navbar-light bg-light">
-                        <span className="navbar-brand">Phase: {fase}</span>
-                    </nav>
-                </Col>
-            </Row>
-            <Row>
-                <Col>
-                    <p>The proposal definition phase is still closed. Please try again later.</p>
-                </Col>
-            </Row>
-        </Container>
-    );
-}
+  const handleBudgetSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await API.setBudget(budget); // Implementa questa API per collegarla al DAO del budget
+      setFeedback('Budget impostato con successo');
+      setShowAlert(false);
+    } catch (error) {
+      setFeedback('Errore impostando il budget');
+      setShowAlert(true);
+    }
+  };
 
-// Componente Phase0Page che decide quale layout mostrare in base al ruolo dell'utente
-export function Phase0Page({ user, fase }) {
-    return (
-        <div className="min-vh-100 d-flex flex-column">
-            {user.role === 'Admin' ? (
-                <AdminLayout user={user} fase={fase} />
-            ) : (
-                <MemberLayout user={user} fase={fase} />
-            )}
+  //Stato usato per gestire i messaggi di errore
+  const [errors, setErrors] = useState([]);
+
+  return (
+    <Container fluid className="gap-3 align-items-center">
+      {user.role === 'Admin' ? (
+        <div>
+          <Row>
+            <Col>
+              <h1>Fase {fase}</h1>
+            </Col>
+          </Row>
+          <Form
+            className="block-example border border-primary rounded mt-4 mb-0 px-5 py-4 form-padding"
+            onSubmit={handleBudgetSubmit}
+          >
+            <Form.Group className="mb-3">
+              <Form.Label>
+                <h3>Inserisci il budget</h3>
+              </Form.Label>
+              <Form.Control
+                className={errors.budget ? 'wrong-field' : ''}
+                type="number"
+                min={0}
+                placeholder="Enter budget"
+                value={budget}
+                onChange={handleBudgetChange}
+              />
+            </Form.Group>
+            <Button variant="primary" type="submit">
+              Imposta Budget
+            </Button>
+          </Form>
+          <Row className="justify-content-end mt-3">
+            <Col xs="auto">
+              <Button onClick={avanzareFase} className="mt-3">
+                Passa alla fase 1
+              </Button>
+            </Col>
+          </Row>
         </div>
-    );
-}
+      ) : (
+        <Row>
+          <Col>
+            <h3>La fase di definizione delle proposte è ancora chiusa.</h3>
+            <h4>Riprovare più tardi!</h4>
+          </Col>
+        </Row>
+      )}
+      <Alert variant="danger" show={showAlert}>
+        Errore nell'impostare il budget
+      </Alert>
+    </Container>
+  );
+};
 
 export default Phase0Page;

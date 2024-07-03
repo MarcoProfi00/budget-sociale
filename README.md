@@ -300,12 +300,37 @@
   ```
   - Error responses: `500 Internal Server Error` (generic error), `404 Proposals not found`
 
-- DELETE `/api/proposal/restart/`
-  - Description: Elimina la tabella Vote e la tabella Proposal
+- DELETE `/api/proposal/restart`
+  - Description: Svuota la tabella Vote, la tabella Proposal e la tabella Budget
   - Request body: _None_
   - Response: `200 OK` (success)
   - Response body: true
   - Error responses:  `403 Only the admin can do the reset` (not admin), `503 Service Unavailable` (database error)
+
+- POST `/api/budget`
+  - Description: Crea un nuovo budget
+  - Request body: Amount del budget
+  ``` json
+  {
+    "amount": 3000
+  }
+  ```
+  - Response: `200 OK` (success)
+  - Response body: true
+  - Error responses: `403 Only the admin can insert the budget` (not admin), `503 Service Unavailable` (database error)
+
+- GET `/api/budget`
+  - Description: Recupera il budget
+  - Request body: -_None_
+  - Response: `200 OK` (success)
+  - Response body: budget
+  ``` json
+  {
+    "id": 1,
+    "amount": 3000
+  }
+  ```
+  - Error responses: `503 Service Unavailable` (database error)
 
 
 ## Database Tables
