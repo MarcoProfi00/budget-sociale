@@ -4,6 +4,9 @@
 import db from "../db/db.mjs"
 import crypto from 'crypto';
 import { UserNotFoundError } from "../errors/userError.mjs";
+import { rejects } from "assert";
+import { NotAdminError, NotAdminErrorBudget, UnauthorizedUserError } from "../errors/proposalError.mjs";
+import Budget from "../components/Budget.mjs";
 
 export default function UserDAO() {
     
@@ -46,6 +49,55 @@ export default function UserDAO() {
                         else
                             resolve(user); //se è uguale resolve con true
                     });
+                }
+            })
+        })
+    }
+
+    /**
+     * Crea un nuovo budget
+     * @param {*} userId id dell'utente che lo inserisce (admin)
+     * @param {*} budget oggetto budget da aggiungere
+     * @returns La promise si risolve ritornando l'oggetto budget
+     */
+    this.insertBudget = (userId, budget) => {
+        return new Promise((resolve, reject) => {
+            let sql = "SELECT * FROM User WHERE id = ? AND role = 'Admin'";
+            db.get(sql, [userId], (err, row) => {
+                if(err){
+                    reject(err);
+                } else if (!row) {
+                    reject(new NotAdminErrorBudget())
+                } else {
+                    sql = "INSERT INTO Budget (amount) VALUES (?)";
+                    db.run(sql, [budget.amount], function (err){
+                        if (err){
+                            reject(err);
+                        } else {
+                            budget.id = this.lastID;
+                            resolve(budget)
+                        }
+                    })
+                }
+            })
+        })
+    }
+
+    /**
+     * Recupera il budget
+     * @returns La promise si risolve ritornando l'oggetto budget
+     */
+    this.getBudget = () => {
+        return new Promise((resolve, reject) => {
+            let sql = "SELECT * FROM Budget";
+            db.get(sql, (err, row) => {
+                if(err) {
+                    reject(err)
+                } else if (!row){
+                    reject(new BudgetNotExistError())
+                } else {
+                    const budget = new Budget(row.id, row.amount)
+                    resolve(budget)
                 }
             })
         })

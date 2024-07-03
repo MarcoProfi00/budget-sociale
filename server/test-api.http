@@ -39,6 +39,19 @@ GET http://localhost:3001/api/sessions/current HTTP/1.1
 DELETE http://localhost:3001/api/sessions/current HTTP/1.1
 ###
 
+## Crea un nuovo budget
+POST http://localhost:3001/api/budget HTTP/1.1
+content-type: application/json
+
+{
+    "amount": 3000
+}
+###
+
+## Recupera il budget
+GET http://localhost:3001/api/budget HTTP/1.1
+###
+
 ## Recupera tutte le proposte di uno user dallo userId
 GET http://localhost:3001/api/proposals/2 HTTP/1.1
 ###

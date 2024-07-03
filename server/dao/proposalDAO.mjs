@@ -397,7 +397,7 @@ export default function ProposalDAO() {
     }
 
     /**
-     * Elimina le proposte e le votazioni (restart the process)
+     * Elimina le proposte, le votazioni e il budget (restart the process)
      * @param {*} userId id dell'utente che effettua il restart (deve essere admin)
      * @returns La promise si risolve ritornando true se l'eliminazione delle righe è andato a buon fine
      */
@@ -424,7 +424,14 @@ export default function ProposalDAO() {
                                 if(err){
                                     reject(err)
                                 } else {
-                                    resolve(true)
+                                    sql = "DELETE FROM Budget;";
+                                    db.run(sql, function(err) {
+                                        if(err){
+                                            reject(err)
+                                        } else {
+                                            resolve(true)
+                                        }
+                                    })
                                 }
                             })
                         }

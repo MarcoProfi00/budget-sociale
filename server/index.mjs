@@ -3,23 +3,30 @@ import morgan from 'morgan';
 import {check, validationResult} from 'express-validator'; // validation middleware
 import ProposalDAO from "./dao/proposalDAO.mjs";
 import Proposal, { Vote } from './components/Proposal.mjs';
-import { NotAdminError, ProposalAlreadyExistsError, ProposalsNotFoundError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError } from './errors/proposalError.mjs';
+import { NotAdminError, NotAdminErrorBudget, ProposalAlreadyExistsError, ProposalsNotFoundError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError } from './errors/proposalError.mjs';
 import UserDAO from './dao/userDAO.mjs';
 import passport from 'passport';
 import LocalStrategy from 'passport-local';
 import session from 'express-session'; //middleware per gestire le sessioni in Express.
 import cors from 'cors';
+import Budget from './components/Budget.mjs';
 
 const proposalDAO = new ProposalDAO();
 const userDAO = new UserDAO();
 
 // init express and set up the middlewares
 const app = new express();
-const port = 3001;
+
 
 app.use(morgan('dev'));
 app.use(express.json());
 
+/** Set up and enable Cross-Origin Resource Sharing (CORS) **/
+const corsOptions = {
+  origin: 'http://localhost:5173',
+  credentials: true
+};
+app.use(cors(corsOptions))
 
 /** Passport **/
 /**
@@ -119,6 +126,49 @@ app.delete('/api/sessions/current', (req, res) => {
   });
 });
 
+/**
+ * Crea un nuovo budget, fornendo le informazioni necessarie
+ * POST /api/budget
+ */
+app.post('/api/budget', isLoggedIn, [
+  check('amount').isNumeric().notEmpty()
+], async (req, res) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
+
+  const budget = new Budget(undefined, req.body.amount)
+
+  try {
+    const result = await userDAO.insertBudget(req.user.id, budget)
+    res.json(result);
+  } catch (err) {
+    if (err instanceof NotAdminErrorBudget) {
+      res.status(err.code).json({ error: err.message });
+    } else {
+      res.status(503).json({error: `Database error during the creation of the budget: ${err}`});
+    }
+  }
+})
+
+/**
+ * Get del budget
+ * GET /api/budget
+ */
+app.get('/api/budget', isLoggedIn, async (req, res) => {
+  try{
+    const result = await userDAO.getBudget();
+    if(result.error){
+      res.status(404).json(result)
+    } else {
+      res.json(result);
+    }
+  } catch(err) {
+    res.status(503).json({error: `Database error during the get of the budget`})
+  }
+});
 
 /** Proposal APIs **/
 //FASE 1
@@ -149,7 +199,6 @@ app.get('/api/proposals/:userId', isLoggedIn, async (req, res) => {
  * POST /api/proposals
  */
 app.post('/api/proposals', isLoggedIn, [
-  //check('user_id').isNumeric().notEmpty(),
   check('description').isString().notEmpty(),
   check('cost').isNumeric().notEmpty()
 ], async (req, res) => {
@@ -406,7 +455,8 @@ app.delete('/api/proposal/restart', isLoggedIn, async(req, res) => {
 })
 
 
+
+
 // activate the server
-app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}`);
-});
+const PORT = 3001;
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}/`));

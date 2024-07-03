@@ -4,6 +4,7 @@ const UNAUTHORIZED_USER = "Another user's proposal"
 const UNAUTHORIZED_USER_VOTE = "You cannot vote your proposal"
 const VOTE_NOT_FOUND = "User has not voted on any proposal"
 const NOT_ADMIN = "Only the admin can do the reset"
+const NOT_ADMIN_BUDGET = "Only the admin can insert the budget"
 
 
 export class ProposalsNotFoundError extends Error{
@@ -50,6 +51,14 @@ export class NotAdminError extends Error{
     constructor(){
         super();
         this.message = NOT_ADMIN;
+        this.code = 403;
+    }
+}
+
+export class NotAdminErrorBudget extends Error{
+    constructor(){
+        super();
+        this.message = NOT_ADMIN_BUDGET;
         this.code = 403;
     }
 }
