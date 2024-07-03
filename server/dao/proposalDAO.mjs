@@ -290,32 +290,41 @@ export default function ProposalDAO() {
      * @param {*} budget budget da rispettare
      * @returns La promise si risolve ritornando true se l'approvazione va a buon fine
      */
-    this.approveProposals = (budget) => {
+    this.approveProposals = () => {
         return new Promise(async (resolve, reject) => {
             let totalCost = 0;
             const selectedProposals = [];
             //richiamo la promise precedente per ottenere l'array di proposte ordinate in base allo score totale
             const proposals = await this.getProposalsOrderedToScore();
             
-            for (let i = 0; i < proposals.length; i++){
-                if(totalCost + proposals[i].cost <= budget){
-                    selectedProposals.push(proposals[i]);
-                    totalCost += proposals[i].cost;
-                }
-            }
-            let sql = "BEGIN TRANSACTION;";
-            for(let i = 0; i < selectedProposals.length; i++){
-                //query per aggiornare il campo approved delle proposte all'interno del budget
-                sql += `UPDATE Proposal SET approved = 1 WHERE id = '${selectedProposals[i].id}';`
-            }
-            sql += "COMMIT;";
-            db.exec(sql, function(err) {
-                if(err){
-                    reject(err)
+            let sql = "SELECT * FROM Budget";
+            db.get(sql, (err, row) => {
+                if(err) {
+                    reject(err);
                 } else {
-                    resolve(true)
+                    const budget = row.amount
+                    for (let i = 0; i < proposals.length; i++){
+                        if(totalCost + proposals[i].cost <= budget){
+                            selectedProposals.push(proposals[i]);
+                            totalCost += proposals[i].cost;
+                        }
+                    }
+                    sql = "BEGIN TRANSACTION;";
+                    for(let i = 0; i < selectedProposals.length; i++){
+                        //query per aggiornare il campo approved delle proposte all'interno del budget
+                        sql += `UPDATE Proposal SET approved = 1 WHERE id = '${selectedProposals[i].id}';`
+                    }
+                    sql += "COMMIT;";
+                    db.exec(sql, function(err) {
+                        if(err){
+                            reject(err)
+                        } else {
+                            resolve(true)
+                        }
+                    })
                 }
             })
+             
         })
     }
 

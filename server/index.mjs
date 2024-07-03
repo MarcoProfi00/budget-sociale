@@ -388,6 +388,7 @@ app.get('/api/proposal/ordered', isLoggedIn, async (req, res) => {
 app.put('/api/proposal/approve', isLoggedIn, async (req, res) => {
   //const budget = 2000; //per ora passo il budget come parametro
   try{
+    //const result = await proposalDAO.approveProposals(req.body.budget)
     const result = await proposalDAO.approveProposals(req.body.budget)
     if(result.error){
       res.status(404).json(result);

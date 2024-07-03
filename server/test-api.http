@@ -107,11 +107,6 @@ GET http://localhost:3001/api/proposal/ordered HTTP/1.1
 
 ## Approva proposte in base al budget
 PUT http://localhost:3001/api/proposal/approve HTTP/1.1
-content-type: application/json
-
-{
-    "budget": 4500
-}
 ###
 
 ## Recupera le proposte approvate ordinate in base allo score_totale
