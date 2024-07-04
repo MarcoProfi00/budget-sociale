@@ -404,49 +404,4 @@ export default function ProposalDAO() {
             })
         })
     }
-
-    /**
-     * Elimina le proposte, le votazioni e il budget (restart the process)
-     * @param {*} userId id dell'utente che effettua il restart (deve essere admin)
-     * @returns La promise si risolve ritornando true se l'eliminazione delle righe è andato a buon fine
-     */
-    this.restartProcess = (userId) => {
-        return new Promise((resolve, reject) => {
-            //query per verificare che l'utente è l'admin
-            let sql = `SELECT * FROM User WHERE user.id = ? AND User.role = 'Admin'`;
-            db.get(sql, [userId], (err, row) => {
-                if(err){
-                    reject(err);
-                    //se la riga è vuota vuol dire che non è un admin
-                } else if(!row){
-                    reject(new NotAdminError())
-                } else {
-                    //query per svuotare la tabella Vote
-                    sql = "DELETE FROM Vote;";
-                    db.run(sql, function(err) {
-                        if(err){
-                            reject(err)
-                        } else {
-                            //query per svuotare la tabella Proposal
-                            sql = "DELETE FROM Proposal;";
-                            db.run(sql, function(err) {
-                                if(err){
-                                    reject(err)
-                                } else {
-                                    sql = "DELETE FROM Budget;";
-                                    db.run(sql, function(err) {
-                                        if(err){
-                                            reject(err)
-                                        } else {
-                                            resolve(true)
-                                        }
-                                    })
-                                }
-                            })
-                        }
-                    })
-                }
-            })
-        })
-    }
 }

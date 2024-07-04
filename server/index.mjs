@@ -3,13 +3,14 @@ import morgan from 'morgan';
 import {check, validationResult} from 'express-validator'; // validation middleware
 import ProposalDAO from "./dao/proposalDAO.mjs";
 import Proposal, { Vote } from './components/Proposal.mjs';
-import { NotAdminError, NotAdminErrorBudget, ProposalAlreadyExistsError, ProposalsNotFoundError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError } from './errors/proposalError.mjs';
+import { BudgetNotExistError, FaseError, NotAdminError, NotAdminErrorBudget, ProposalAlreadyExistsError, ProposalsNotFoundError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError } from './errors/proposalError.mjs';
 import UserDAO from './dao/userDAO.mjs';
 import passport from 'passport';
 import LocalStrategy from 'passport-local';
 import session from 'express-session'; //middleware per gestire le sessioni in Express.
 import cors from 'cors';
-import Budget from './components/Budget.mjs';
+import Budget from './components/BudgetSociale.mjs';
+import BudgetSociale from './components/BudgetSociale.mjs';
 
 const proposalDAO = new ProposalDAO();
 const userDAO = new UserDAO();
@@ -127,10 +128,10 @@ app.delete('/api/sessions/current', (req, res) => {
 });
 
 /**
- * Crea un nuovo budget, fornendo le informazioni necessarie
- * POST /api/budget
+ * Inizializza creando un nuovo budget e impostando la fase a 0, fornendo le informazioni necessarie
+ * POST /api/init
  */
-app.post('/api/budget', isLoggedIn, [
+app.post('/api/init', isLoggedIn, [
   check('amount').isNumeric().notEmpty()
 ], async (req, res) => {
   const errors = validationResult(req);
@@ -139,27 +140,27 @@ app.post('/api/budget', isLoggedIn, [
     return res.status(422).json({ errors: errors.array() });
   }
 
-  const budget = new Budget(undefined, req.body.amount)
+  const budget = new BudgetSociale(undefined, req.body.amount, 0)
 
   try {
-    const result = await userDAO.insertBudget(req.user.id, budget)
+    const result = await userDAO.initApp(req.user.id, budget)
     res.json(result);
   } catch (err) {
     if (err instanceof NotAdminErrorBudget) {
       res.status(err.code).json({ error: err.message });
     } else {
-      res.status(503).json({error: `Database error during the creation of the budget: ${err}`});
+      res.status(503).json({error: `Database error during init of application: ${err}`});
     }
   }
 })
 
 /**
- * Get del budget
- * GET /api/budget
+ * Get del budget della fase
+ * GET /api/budgetandfase
  */
-app.get('/api/budget', isLoggedIn, async (req, res) => {
+app.get('/api/budgetandfase', isLoggedIn, async (req, res) => {
   try{
-    const result = await userDAO.getBudget();
+    const result = await userDAO.getBudgetAndFase();
     if(result.error){
       res.status(404).json(result)
     } else {
@@ -169,6 +170,29 @@ app.get('/api/budget', isLoggedIn, async (req, res) => {
     res.status(503).json({error: `Database error during the get of the budget`})
   }
 });
+
+/**
+ * Avanza di fase
+ * PUT /api/nextfase
+ */
+app.put('/api/nextfase', isLoggedIn, async (req, res) => {
+  try{
+    const result = await userDAO.nextPhase(req.user.id);
+    if(result.error){
+      res.status(404).json(result);
+    } else {
+      res.json(result);
+    }
+  } catch (err){
+    if(err instanceof NotAdminErrorBudget, BudgetNotExistError, FaseError){
+      res.status(err.code).json({ error: err.message });
+    } else {
+      res.status(503).json({error: `Database error during the update the phase`});
+    }
+  }
+})
+
+
 
 /** Proposal APIs **/
 //FASE 1
@@ -444,7 +468,7 @@ app.get('/api/proposal/notApproved', isLoggedIn, async (req, res) => {
 
 app.delete('/api/proposal/restart', isLoggedIn, async(req, res) => {
   try{
-    await proposalDAO.restartProcess(req.user.id);
+    await userDAO.restartProcess(req.user.id);
     res.status(200).end();
   } catch (err) {
     if(err instanceof NotAdminError){

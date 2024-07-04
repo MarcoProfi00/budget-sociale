@@ -1,4 +1,4 @@
-
+import BudgetSociale from "../../server/components/BudgetSociale.mjs";
 
 const SERVER_URL = 'http://localhost:3001/api';
 
@@ -36,8 +36,8 @@ const getUserInfo = async () => {
 };
 
 /**
-   * Esegue il logout eliminando la sessione corrente
-   */
+ * Esegue il logout eliminando la sessione corrente
+*/
 const logOut = async() => {
     return await fetch(SERVER_URL + '/sessions/current', {
       method: 'DELETE',
@@ -45,6 +45,45 @@ const logOut = async() => {
     }).then(handleInvalidResponse);
 }
 
+/**
+ * Esegue l'inizalizzazione dell'applicazione creando un BudgetSociale con budget definito e current_fase = 0
+ * @param {*} amount budget da inizializzare
+ */
+async function initApp(amount) {
+    return await fetch(SERVER_URL + '/init', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ amount })
+    }).then(handleInvalidResponse)
+};
+
+/**
+ * Ritorna il budget e la fase
+ */
+async function getBudgetAndFase(){
+    const budgetSociale = await fetch(SERVER_URL + '/budgetandfase', { credentials: 'include'})
+        .then(handleInvalidResponse)
+        .then(response => response.json())
+        //.then(mapApiBudgetSocialeToBudgetSociale);
+    return budgetSociale;
+}
+
+/**
+ * Avanza la fase
+ */
+async function nextFase(){
+    return await fetch(SERVER_URL + '/nextfase', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+    }).then(handleInvalidResponse)
+
+}
 
 function handleInvalidResponse(response) {
     if (!response.ok) { throw Error(response.statusText) }
@@ -55,7 +94,11 @@ function handleInvalidResponse(response) {
     return response;
 }
 
-const API = {logIn, getUserInfo, logOut}
-export default API;
 
-  
+function mapApiBudgetSocialeToBudgetSociale(apiBudgetSociale) {
+    return apiBudgetSociale.map(budgetSociale => new BudgetSociale(budgetSociale.id, budgetSociale.amount, budgetSociale.current_fase))
+}
+
+const API = {logIn, getUserInfo, logOut, initApp, getBudgetAndFase, nextFase}
+
+export default API;

@@ -307,8 +307,8 @@
   - Response body: true
   - Error responses:  `403 Only the admin can do the reset` (not admin), `503 Service Unavailable` (database error)
 
-- POST `/api/budget`
-  - Description: Crea un nuovo budget
+- POST `/api/init`
+  - Description: Inizializza l'applicazione inserendo un nuovo budget e la fase a 0
   - Request body: Amount del budget
   ``` json
   {
@@ -316,21 +316,37 @@
   }
   ```
   - Response: `200 OK` (success)
-  - Response body: true
+  - Response body: oggetto BudgetSociale
+  ``` json
+  {
+    "id": 1,
+    "amount": 3000,
+    "current_fase": 0
+  }
+  ```
   - Error responses: `403 Only the admin can insert the budget` (not admin), `503 Service Unavailable` (database error)
 
-- GET `/api/budget`
-  - Description: Recupera il budget
-  - Request body: -_None_
+- GET `/api/budgetandfase`
+  - Description: Recupera il budget e la fase attuale
+  - Request body: _None_
   - Response: `200 OK` (success)
   - Response body: budget
   ``` json
   {
     "id": 1,
-    "amount": 3000
+    "amount": 3000,
+    "current_fase": 0
   }
   ```
-  - Error responses: `503 Service Unavailable` (database error)
+  - Error responses: `503 Service Unavailable` (database error), `404 Budget not found` (budget not exist)
+
+- PUT `/api/nextfase`
+  - Description: Avanza di uno la fase
+  - Request body: _None_
+  - Response: `200 OK` (success)
+  - Response body: true
+  - Error responses: `503 Service Unavailable` (database error), `403 Only the admin can insert the budget or next phase` (not admin error budget), `404 Budget not found` (budget not exist), `403 The phase not allowed` (Fase error)
+
 
 
 ## Database Tables

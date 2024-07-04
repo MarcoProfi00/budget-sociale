@@ -1,15 +1,20 @@
 import React, { useState, useContext } from 'react';
-import PropTypes from 'prop-types';
+
 import { Container, Col, Navbar, Form, Button, Alert, Row} from 'react-bootstrap';
 import { usePhase } from '../contexts/PhaseContext';
+import { useNavigate } from 'react-router-dom';
+
 import FeedbackContext from '../contexts/FeedbackContext';
 import API from '../API';
 
 const Phase0Page = ({ user }) => {
-  const { fase, setFase, avanzareFase } = usePhase();
-  const { setFeedback } = useContext(FeedbackContext);
+  const navigate = useNavigate(); // Ottieni la funzione di navigazione
+  const { fase, avanzareFase } = usePhase();
+  const { setFeedback, setFeedbackFromError  } = useContext(FeedbackContext);
   const [budget, setBudget] = useState('');
   const [showAlert, setShowAlert] = useState(false);
+  const [alreadySetBudgetAlert, setAlreadySetBudgetAlert] = useState(false) //stato per il budget gia impostato
+  const [successAlert, setSuccessAlert] = useState(false); //stato per il budget impostato correttamente
 
   const handleBudgetChange = (e) => {
     setBudget(e.target.value);
@@ -17,14 +22,52 @@ const Phase0Page = ({ user }) => {
 
   const handleBudgetSubmit = async (e) => {
     e.preventDefault();
+
+    if (budget === '') {
+      setFeedbackFromError(new Error('È necessario inserire un budget.'));
+      setShowAlert(true);
+      return;
+    }
+
     try {
-      await API.setBudget(budget); // Implementa questa API per collegarla al DAO del budget
-      setFeedback('Budget impostato con successo');
-      setShowAlert(false);
+      if (alreadySetBudgetAlert) {
+        // Mostra l'alert che è possibile inserire solo un budget
+        setFeedbackFromError(new Error('È possibile inserire solo un budget.'));
+        setShowAlert(true);
+      } else {
+        await API.initApp(budget);
+        setFeedback('Budget impostato con successo');
+        setSuccessAlert(true); // Mostra l'alert di successo
+        setTimeout(() => {
+          setSuccessAlert(false); // Nasconde l'alert di successo dopo 3 secondi
+        }, 3000);
+        setAlreadySetBudgetAlert(true); // Imposta il flag per indicare che il budget è stato impostato
+        setShowAlert(false);
+      }
     } catch (error) {
-      setFeedback('Errore impostando il budget');
+      setFeedbackFromError(error);
       setShowAlert(true);
     }
+  };
+
+  /**
+   * Funzione chiamata quando premo "Passa alla fase 1"
+   * Chiama avanzareFase() per impostare la fase da 0 a 1
+   * Naviga alla Phase1Page
+   */
+  const handlePassaFase1 = async () => {
+    try {
+      await avanzareFase();
+      navigate('/phase1'); // Naviga alla Phase1Page dopo aver avanzato la fase
+    } catch (error) {
+      setFeedbackFromError(error);
+      setShowAlert(true);
+    }
+  };
+
+
+  const handleAlreadySetBudgetAlertClose = () => {
+    setAlreadySetBudgetAlert(false);
   };
 
   //Stato usato per gestire i messaggi di errore
@@ -48,7 +91,6 @@ const Phase0Page = ({ user }) => {
                 <h3>Inserisci il budget</h3>
               </Form.Label>
               <Form.Control
-                className={errors.budget ? 'wrong-field' : ''}
                 type="number"
                 min={0}
                 placeholder="Enter budget"
@@ -62,7 +104,7 @@ const Phase0Page = ({ user }) => {
           </Form>
           <Row className="justify-content-end mt-3">
             <Col xs="auto">
-              <Button onClick={avanzareFase} className="mt-3">
+              <Button onClick={handlePassaFase1} className="mt-3">
                 Passa alla fase 1
               </Button>
             </Col>
@@ -76,8 +118,11 @@ const Phase0Page = ({ user }) => {
           </Col>
         </Row>
       )}
-      <Alert variant="danger" show={showAlert}>
-        Errore nell'impostare il budget
+       <Alert variant="success" show={successAlert} onClose={() => setSuccessAlert(false)} dismissible>
+        Budget impostato con successo
+      </Alert>
+      <Alert variant="danger" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
+        {alreadySetBudgetAlert ? "È possibile inserire un solo budget." : "Errore nell'impostare il budget."}
       </Alert>
     </Container>
   );
