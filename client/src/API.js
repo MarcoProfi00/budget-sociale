@@ -63,14 +63,27 @@ async function initApp(amount) {
 /**
  * Ritorna il budget e la fase
  */
-async function getBudgetAndFase(){
-    const budgetSociale = await fetch(SERVER_URL + '/budgetandfase', { credentials: 'include'})
-        .then(handleInvalidResponse)
-        .then(response => response.json())
-        //.then(mapApiBudgetSocialeToBudgetSociale);
-    return budgetSociale;
-}
-
+async function getBudgetAndFase() {
+    try {
+      const response = await fetch(SERVER_URL + '/budgetandfase', {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
+  
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+  
+      const budgetSociale = await response.json();
+      return budgetSociale;
+    } catch (error) {
+      console.error('Error fetching budget and fase:', error);
+      throw error; // Rilancia l'errore per gestirlo più a monte
+    }
+  }
 /**
  * Avanza la fase
  */

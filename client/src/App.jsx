@@ -25,22 +25,29 @@ function App() {
   const [user, setUser] = useState(null);
   const [loggedIn, setLoggedIn] = useState(false);
   const { setFeedback, setFeedbackFromError } = useContext(FeedbackContext);
-  const { fase, setFase } = usePhase(null); // Ottengo fase e funzione per ottenere budget e fase dal contesto PhaseContext
+  const { fase, setFase, budget, setBudget } = usePhase(); // Ottengo fase e funzione per ottenere budget e fase dal contesto PhaseContext
+
+  //Stato usato per forzare un refresh del budgetSociale
+  const [shouldRefresh, setShouldRefresh] = useState(true);
+
 
   /**
    * Effetto per caricare le informazioni dell'utente all'avvio dell'applicazione
    */
   useEffect(() => {
-    API.getUserInfo()
+    if (loggedIn) {
+      API.getUserInfo()
         .then(user => {
-            setLoggedIn(true);
-            setUser(user);  // qui hai le informazioni dell'utente, se già autenticato
-        }).catch(e => {
-            if(loggedIn)    // stampa l'errore solo se lo stato è incoerente (cioè, l'app è stata configurata per essere autenticata)
-                setFeedbackFromError(e);
-            setLoggedIn(false); setUser(null);
-        }); 
-}, []);
+          setUser(user);
+        })
+        .catch(e => {
+          setFeedbackFromError(e);
+          setLoggedIn(false);
+          setUser(null);
+        });
+    }
+  }, [setFeedbackFromError]);
+
 
   /**
    * Funzione che gestisce il login dell'user
@@ -52,32 +59,33 @@ function App() {
       setUser(user);
       setLoggedIn(true);
       setFeedback(`Welcome, ${user.name}`);
+
+      // Dopo il login, ottieni la fase e il budget dal server e aggiorna lo stato
+      const budgetSociale = await API.getBudgetAndFase();
+      setFase(budgetSociale.current_fase); // Imposta la fase nel contesto
+      setBudget(budgetSociale.amount); // Imposta il budget nel contesto
+
     } catch (error) {
       setFeedbackFromError(error);
     }
   };
 
-  /**
-   * Effetto per ottenere la fase corrente dopo il login
-   */
-  useEffect(() => {
-    const fetchFase = async () => {
+  /*useEffect(() => {
+    const getBudgetAndFase = async () => {
       try {
-        const budgetAndFase = await API.getBudgetAndFase();
-        // Supponendo che budgetAndFase contenga un campo 'fase'
-        const faseAttuale = budgetAndFase.fase;
-        setFase(faseAttuale);
+        const budgetSociale = await API.getBudgetAndFase();
+        setBudget(budgetSociale.amount); // Imposta il budget nel contesto
+        setFase(budgetSociale.current_fase); // Imposta la fase nel contesto
       } catch (error) {
-        console.error('Errore durante il recupero della fase:', error);
-        // Gestisci l'errore se necessario
+        console.error('Errore nel recupero del budget e della fase:', error);
+        // Gestisci l'errore in base alle tue esigenze
       }
     };
+    
 
-    if (loggedIn) {
-      fetchFase();
-    }
-  }, []);
-
+    getBudgetAndFase(); // Chiamiamo la funzione al mount del componente
+  }, [setBudget, setFase]); // Dipendenze dell'effetto useEffect
+  */
 
   /**
    * Funzione che gestisce il logout dell'user
@@ -114,6 +122,11 @@ function App() {
                 )
               } />
             </Routes>
+            <div>
+              Current Phase: {fase}
+              <br />
+              Current Budget: {budget}
+            </div>
           </Container>
         </div>
       </PhaseProvider>

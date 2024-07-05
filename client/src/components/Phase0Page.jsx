@@ -58,7 +58,7 @@ const Phase0Page = ({ user }) => {
   const handlePassaFase1 = async () => {
     try {
       await avanzareFase();
-      navigate('/phase1'); // Naviga alla Phase1Page dopo aver avanzato la fase
+      navigate('/'); // Naviga alla Phase1Page dopo aver avanzato la fase
     } catch (error) {
       setFeedbackFromError(error);
       setShowAlert(true);

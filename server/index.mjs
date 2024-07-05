@@ -158,7 +158,7 @@ app.post('/api/init', isLoggedIn, [
  * Get del budget della fase
  * GET /api/budgetandfase
  */
-app.get('/api/budgetandfase', isLoggedIn, async (req, res) => {
+app.get('/api/budgetandfase', async (req, res) => {
   try{
     const result = await userDAO.getBudgetAndFase();
     if(result.error){

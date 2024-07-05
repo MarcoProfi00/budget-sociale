@@ -95,7 +95,11 @@ export default function UserDAO() {
                 if(err) {
                     reject(err)
                 } else if (!row){
-                    reject(new BudgetNotExistError())
+                    //budgetSociale vuoto (inizializzato tutto a 0)
+                    const budgetSociale = new BudgetSociale(undefined, 0, 0)
+                    //risolvo con il budgetsociale vuoto
+                    resolve(budgetSociale)
+                    //reject(new BudgetNotExistError())
                 } else {
                     const budget = new BudgetSociale(row.id, row.amount, row.current_fase)
                     resolve(budget)

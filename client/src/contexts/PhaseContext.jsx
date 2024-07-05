@@ -25,9 +25,9 @@ export const PhaseProvider = ({ children }) => {
   const initApp = async (amount) => {
     try {
       await API.initApp(amount); // chiamo l'API per inizializzare il BudgetSociale
-      const { current_fase, budget } = await API.getBudgetAndFase(); // Ottengo il budget e la fase dopo l'inizializzazione
-      setFase(current_fase); // Imposto la fase
-      setBudget(budget);
+      const budgetSociale = await API.getBudgetAndFase(); // Ottengo il budget e la fase dopo l'inizializzazione
+      setFase(budgetSociale.current_fase); // Imposto la fase
+      setBudget(budgetSociale.amount);
       setError(null); // Reset error
     } catch (error) {
       console.error("Failed to initialize app", error);
@@ -40,12 +40,12 @@ export const PhaseProvider = ({ children }) => {
    */
   const getBudgetAndFase = async () => {
     try {
-      const { current_fase, budget } = await API.getBudgetAndFase();
-      setFase(current_fase); // Imposta la fase nel tuo stato locale
-      setBudget(budget); // Imposta il budget nel tuo stato locale
+      const budgetSociale = await API.getBudgetAndFase(); // Ottengo il budget e la fase dopo l'inizializzazione
+      setFase(budgetSociale.current_fase); // Imposto la fase
+      setBudget(budgetSociale.amount);
       setError(null); // Reset error
     } catch (error) {
-      console.error('Failed to fetch budget and fase:', error);
+      console.error('Errore nell\'ottenere la fase:', error);
       setError('Errore nel recuperare il budget e la fase'); // Imposta l'errore per mostrare nell'interfaccia utente
     }
   };
@@ -56,8 +56,8 @@ export const PhaseProvider = ({ children }) => {
   const avanzareFase = async () => {
     try {
       await API.nextFase(); // chiamo API per avanzare la fase
-      const { current_fase } = await API.getBudgetAndFase(); // ottengo il nuovo stato del budget e della fase
-      setFase(current_fase); // imposto la fase in base alla risposta dell'API
+      const budgetSociale = await API.getBudgetAndFase(); // ottengo il nuovo stato del budget e della fase
+      setFase(budgetSociale.current_fase); // imposto la fase in base alla risposta dell'API
       setError(null); // Reset error
     } catch (error) {
       console.error('Failed to advance fase:', error);
