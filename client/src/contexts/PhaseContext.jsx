@@ -43,10 +43,10 @@ export const PhaseProvider = ({ children }) => {
       const budgetSociale = await API.getBudgetAndFase(); // Ottengo il budget e la fase dopo l'inizializzazione
       setFase(budgetSociale.current_fase); // Imposto la fase
       setBudget(budgetSociale.amount);
-      setError(null); // Reset error
+      setError(null);
     } catch (error) {
       console.error('Errore nell\'ottenere la fase:', error);
-      setError('Errore nel recuperare il budget e la fase'); // Imposta l'errore per mostrare nell'interfaccia utente
+      setError('Errore nel recuperare il budget e la fase'); 
     }
   };
 
@@ -80,7 +80,7 @@ export const PhaseProvider = ({ children }) => {
   }, []);
 
   return (
-    <PhaseContext.Provider value={{ fase, setFase, avanzareFase, initApp, canAdvanceToNextPhase, getBudgetAndFase, budget, error }}>
+    <PhaseContext.Provider value={{ fase, setFase, avanzareFase, initApp, canAdvanceToNextPhase, getBudgetAndFase, budget, setBudget, error }}>
       {children}
     </PhaseContext.Provider>
   );

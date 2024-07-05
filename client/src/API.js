@@ -1,4 +1,5 @@
 import BudgetSociale from "../../server/components/BudgetSociale.mjs";
+import Proposal from "../../server/components/Proposal.mjs";
 
 const SERVER_URL = 'http://localhost:3001/api';
 
@@ -98,6 +99,78 @@ async function nextFase(){
 
 }
 
+/**
+ * Restituisce le proposte di un utente
+ */
+async function getMyProposals(userId) {
+    const proposals = await fetch(SERVER_URL + `/proposals/${userId}`, { credentials: 'include' })
+        .then(handleInvalidResponse)
+        .then(response => response.json())
+        .then(mapApiProposalsToProposals);
+
+    return proposals;
+}
+
+async function getProposalById(proposalId) {
+    try {
+      const response = await fetch(`${SERVER_URL}/proposals/id/${proposalId}`, {
+        credentials: 'include'
+      });
+  
+      if (!response.ok) {
+        throw new Error('Network response was not ok.');
+      }
+  
+      const proposal = await response.json();
+      return proposal;
+    } catch (error) {
+      console.error('Error fetching proposal by ID:', error);
+      throw error;
+    }
+  }
+
+/**
+ * Elimina la proposta dell'utente in base all'id della proposta
+ * @param {*} userId id dell'utente autore della proposta
+ * @param {*} proposalId id della proposta da eliminare
+ */
+async function deleteProposal(userId, proposalId) {
+    return await fetch(SERVER_URL + `/proposals/${proposalId}`, { 
+        method: 'DELETE',
+        credentials: 'include',
+    }).then(handleInvalidResponse)
+}
+
+/**
+ * Aggiunge una nuova proposta
+ * @param {*} proposal proposta da aggiungere
+ */
+async function addProposal(proposal) {
+    return await fetch(SERVER_URL + '/proposals', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(proposal)
+    }).then(handleInvalidResponse)
+}
+
+/**
+ * Aggiorna una proposta esistente
+ * @param {*} proposal proposta da modificare
+ */
+async function updateProposal(proposal) {
+    return await fetch(SERVER_URL + `/proposals/${proposal.id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(proposal)
+    }).then(handleInvalidResponse)
+}
+
 function handleInvalidResponse(response) {
     if (!response.ok) { throw Error(response.statusText) }
     let type = response.headers.get('Content-Type');
@@ -112,6 +185,22 @@ function mapApiBudgetSocialeToBudgetSociale(apiBudgetSociale) {
     return apiBudgetSociale.map(budgetSociale => new BudgetSociale(budgetSociale.id, budgetSociale.amount, budgetSociale.current_fase))
 }
 
-const API = {logIn, getUserInfo, logOut, initApp, getBudgetAndFase, nextFase}
+function mapApiProposalsToProposals(apiProposals){
+    return apiProposals.map(proposal => new Proposal(proposal.id, proposal.userId, proposal.description, proposal.cost, proposal.approved));
+}
+
+const API = {
+    logIn, 
+    getUserInfo, 
+    logOut, 
+    initApp, 
+    getBudgetAndFase, 
+    nextFase, 
+    getMyProposals,
+    getProposalById, 
+    deleteProposal,
+    addProposal,
+    updateProposal
+}
 
 export default API;

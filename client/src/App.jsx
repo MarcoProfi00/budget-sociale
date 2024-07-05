@@ -18,6 +18,7 @@ import { PhaseProvider, usePhase } from './contexts/PhaseContext.jsx';
 import Header from "./components/Header.jsx";
 import Phase0Page from './components/Phase0Page';
 import Phase1Page from './components/Phase1Page.jsx';
+import AddEditProposalForm from './components/AddEditProposalForm.jsx';
 
 
 function App() {
@@ -70,23 +71,6 @@ function App() {
     }
   };
 
-  /*useEffect(() => {
-    const getBudgetAndFase = async () => {
-      try {
-        const budgetSociale = await API.getBudgetAndFase();
-        setBudget(budgetSociale.amount); // Imposta il budget nel contesto
-        setFase(budgetSociale.current_fase); // Imposta la fase nel contesto
-      } catch (error) {
-        console.error('Errore nel recupero del budget e della fase:', error);
-        // Gestisci l'errore in base alle tue esigenze
-      }
-    };
-    
-
-    getBudgetAndFase(); // Chiamiamo la funzione al mount del componente
-  }, [setBudget, setFase]); // Dipendenze dell'effetto useEffect
-  */
-
   /**
    * Funzione che gestisce il logout dell'user
    */
@@ -109,11 +93,14 @@ function App() {
           <Container fluid className="flex-grow-1 d-flex flex-column">
             <Routes>
               <Route path="/login" element={loggedIn ? <Navigate replace to="/" /> : <LoginForm login={handleLogin} />} />
+              <Route path="/myproposals" element={<Phase1Page user={user} />} />
+              <Route path="/addproposal" element={<AddEditProposalForm user={user} mode="add" />} />
+              <Route path="/editproposal/:proposalId" element={<AddEditProposalForm user={user} mode="edit" />} />
               <Route path="*" element={<NotFoundLayout />} />
               <Route path="/" element={
                 loggedIn ? (
                   fase === 1 ? (
-                    <Phase1Page user={user} />
+                    <Navigate replace to="/myproposals" />
                   ) : (
                     <Phase0Page user={user} />
                   )
@@ -122,11 +109,12 @@ function App() {
                 )
               } />
             </Routes>
-            <div>
+            {/*<div>
               Current Phase: {fase}
               <br />
               Current Budget: {budget}
             </div>
+            */}
           </Container>
         </div>
       </PhaseProvider>

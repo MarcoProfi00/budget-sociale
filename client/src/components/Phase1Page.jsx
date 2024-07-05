@@ -1,24 +1,204 @@
-import React from 'react';
-import { Container, Row, Col, Button } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import '../App.css';
+
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Container, Row, Col, Button, Card, Table, Alert } from 'react-bootstrap';
+import { PhaseProvider, usePhase } from '../contexts/PhaseContext.jsx';
+import AddEditProposalForm from './AddEditProposalForm.jsx';
+import API from '../API';
 
 const Phase1Page = ({ user }) => {
+
+  const { fase, setFase, budget, setBudget, avanzareFase } = usePhase();
+  const [proposals, setProposals] = useState([]); //Stato per ottenere le proposte
+  const [alertMessage, setAlertMessage] = useState(null); // Stato per gestire i messaggi di alert
+  const navigate = useNavigate();
+  const { proposalId } = useParams();
+
+
+  /**
+   * UseEffect per recuperare fase e budget attuale
+   */
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const budgetSociale = await API.getBudgetAndFase();
+        setFase(budgetSociale.current_fase); // Imposto la fase nel contesto
+        setBudget(budgetSociale.amount); // Imposto il budget nel contesto
+      } catch (error) {
+        console.error('Error fetching budget and fase:', error);
+      }
+    };
+  
+    fetchData(); // Chiamo la funzione all'avvio del componente
+  }, []);
+
+  /**
+   * Effetto per gestire il recupero delle proposte dell'utente dato il suo id
+   */
+  useEffect(() => {
+    const fetchProposals = async () => {
+      try {
+        if (user) {
+          const proposals = await API.getMyProposals(user.id);
+          setProposals(proposals);
+        } else {
+          setProposals([]); // Pulisco le proposte se l'utente non è autenticato
+        }
+      } catch (error) {
+        console.error('Error fetching proposals:', error);
+        setAlertMessage('Errore nel recupero delle proposte');
+      }
+    };
+
+    fetchProposals(user); //aggiorno le proposte se l'utente cambia
+  }, [user]);
+
+  /**
+   * Funzione chiamata quando premo "Passa alla fase 2"
+   * Chiama avanzareFase() per impostare la fase da 0 a 1
+   * Naviga alla Phase2Page
+   */
+  const handlePassaFase2 = async () => {
+    try {
+      await avanzareFase();
+      //navigate('/myproposals'); // Naviga alla Phase1Page dopo aver avanzato la fase
+    } catch (error) {
+      setFeedbackFromError(error);
+      setShowAlert(true);
+    }
+  };
+
+  /**
+   * Funzione per gestire l'eliminazione di una proposta
+   * @param {*} proposalId id della proposta da eliminare
+   */
+  const handleDeleteProposal = async(proposalId) => {
+    try {
+      await API.deleteProposal(user.id, proposalId);
+      //Setto la lista delle proposte dopo l'eliminazione di una proposta
+      setProposals(proposals.filter((proposal) => proposal.id !== proposalId));
+      
+      setAlertMessage("Proposta eliminata correttamente")
+      setTimeout(() => {
+        setAlertMessage(null);
+        //navigate('/myproposals');
+      }, 3000)
+    } catch (error) {
+      console.log("Errore nell'eliminazione della proposta:", error);
+    }
+  }
+
+  /**
+   * Funzione per filtrare la proposta basata sull'ID
+  */ 
+  const getProposalById = (id) => {
+    return proposals.find(proposal => proposal.id === id);
+  };
+
+  /**
+   * Resetta lo stato dell'alert
+   */
+  const handleCloseAlert = () => {
+    setAlertMessage(null);
+  }
+
   return (
     <Container fluid className="gap-3 align-items-center">
+      {/* Alert */}
+      {alertMessage && (
+        <Alert variant="success" onClose={() => setAlertMessage(null)} dismissible>
+          {alertMessage}
+        </Alert>
+      )}
+
       <Row>
         <Col>
-          <h1>Fase 1</h1>
-          <p>Benvenuto nella fase 1 del progetto!</p>
-          <p>Questa è una pagina vuota di esempio per la fase 1.</p>
-          <p>Puoi aggiungere qui il contenuto specifico per questa fase.</p>
-          {user && user.role === 'Admin' && (
-            <Button variant="primary" className="mt-3">
-              Azione specifica per Admin
-            </Button>
-          )}
-        </Col>
-      </Row>
+          {/* Card bootstrap per il budget e la fase */}
+          <Card className="card bg-light mb-3" style={{ maxWidth: '100rem', marginTop: '1rem' }}>
+            <Card.Header className="text-black">Fase: 1</Card.Header>
+            <Card.Body className="text-black">
+              <Card.Title>Budget disponibile: {budget}</Card.Title>
+              <Card.Text> Definizione delle proposte </Card.Text>
+            </Card.Body>
+          </Card>
+          </Col>
+        </Row>
+
+        <Row>
+          <Col as='h2'> My Proposals </Col>
+        </Row>
+        
+        <Row>
+          <Col lg={10} className="mx-auto">
+            {/* Tabella Proposals */}
+            <MyProposalsTable proposals={proposals} handleDeleteProposal={handleDeleteProposal}>
+            </MyProposalsTable>
+          </Col>
+        </Row>
+
+        <Row>
+          <Col className="text-end mt-3">
+          {/* Bottone che naviga alla pagina di add/delete */}
+          <Link to="/addproposal" className="btn btn-success">
+            <i className="bi bi-plus-lg" style={{ fontSize: '0.75rem' }}></i> Add Proposal
+          </Link>
+          </Col>
+        </Row>
+          
+        {/* Se l'utente loggato è un admin renderizza il bottone Passa alla fase 2 */}
+        {user && user.role === 'Admin' && (
+          <Button onClick={handlePassaFase2} variant="primary" className="float-end mt-3">
+            Passa alla fase 2
+          </Button>
+        )}
+
+
     </Container>
   );
 };
+
+function MyProposalsTable({ proposals, handleDeleteProposal }) {
+  return (
+    <Table>
+      <thead>
+        <tr>
+          <th>Descrizione</th>
+          <th>Costo</th>
+          <th>Azioni</th>
+        </tr>
+      </thead>
+      <tbody>
+        {proposals.length > 0 ? (
+          proposals.map((proposal) => (
+            <tr key={proposal.id}>
+              <td>{proposal.description}</td>
+              <td>{proposal.cost}</td>
+              <td>
+                <Button 
+                  variant="danger" 
+                  size="sm" 
+                  className="me-2" 
+                  onClick={() => handleDeleteProposal(proposal.id)}
+                >
+                  <i className="bi bi-trash" style={{ fontSize: '0.75rem' }}></i>
+                </Button>
+                <Link to={`/editproposal/${proposal.id}`} className="btn btn-warning btn-sm">
+                  <i className="bi bi-pencil" style={{ fontSize: '0.75rem' }}></i>
+                </Link>
+              </td>
+            </tr>
+          ))
+        ) : (
+          <tr>
+            <td colSpan="3" className="text-center">Nessuna proposta trovata</td>
+          </tr>
+        )}
+      </tbody>
+    </Table>
+  );
+}
 
 export default Phase1Page;

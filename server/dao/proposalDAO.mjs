@@ -4,7 +4,7 @@
 
 import Proposal, { ProposalWithVote, ProposalsApproved, ProposalsNotApproved, ProposalsWhithSumOfScore } from "../components/Proposal.mjs";
 import db from "../db/db.mjs"
-import { ProposalsNotFoundError, ProposalAlreadyExistsError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError, NotAdminError } from "../errors/proposalError.mjs";
+import { ProposalOverToBudgetError, ProposalsNotFoundError, ProposalAlreadyExistsError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError, NotAdminError, BudgetNotExistError } from "../errors/proposalError.mjs";
 
 
 function mapRowsToProposal(rows){
@@ -51,6 +51,27 @@ export default function ProposalDAO() {
     }
 
     /**
+     * Recupera la proposta dato il suo id
+     * @param {*} proposalId id della proposta da recuperare
+     * @returns La promise si risolve ritornando la proposta
+     */
+    this.getOnceProposalById = (proposalId) => {
+        return new Promise((resolve, reject) => {
+            let sql = "SELECT * FROM Proposal WHERE id = ?";
+            db.get(sql, [proposalId], (err, row) => {
+                if(err) {
+                    reject(err);
+                } else if (!row) {
+                    reject(new ProposalsNotFoundError())
+                } else {
+                    const proposal = new Proposal(row.id, row.user_id, row.description, row.cost, row.approved);
+                    resolve(proposal)
+                }
+            })
+        })
+    }
+
+    /**
      * Crea una nuova proposta e salva le informazioni nel database
      * Se la proposta esiste gia ritorna errore
      * @param {*} proposal oggetto proposta da aggiungere
@@ -58,26 +79,39 @@ export default function ProposalDAO() {
      */
     this.addProposal = (proposal) => {
         return new Promise((resolve, reject) => {
-            let sql = "SELECT * FROM Proposal WHERE description = ?"
-            db.get(sql, [proposal.description], (err, row) => {
-                if (err){
-                    reject(err)
-                } else if(row) {
-                    reject(new ProposalAlreadyExistsError())
+            let sql = "SELECT amount FROM BudgetSociale";
+            db.get(sql, (err, row) => {
+                if (err) {
+                    reject(err);
+                } else if (!row) {
+                    reject(new BudgetNotExistError());
                 } else {
-                    sql = "INSERT INTO Proposal (user_id, description, cost, approved) VALUES (?, ?, ?, ?)";
-                    db.run(sql, [proposal.userId, proposal.description, proposal.cost, proposal.approved], function (err) {
-                    if (err){
-                        reject(err);
-                    } else {
-                        proposal.id = this.lastID;
-                        resolve(proposal)  
-                    }
+                    let budget = row.amount;
+                    sql = "SELECT * FROM Proposal WHERE description = ?";
+                    db.get(sql, [proposal.description], (err, row) => {
+                        if (err) {
+                            reject(err);
+                        } else if (row) {
+                            reject(new ProposalAlreadyExistsError());
+                        } else if (proposal.cost > budget) {
+                            reject(new ProposalOverToBudgetError());
+                        } else {
+                            sql = "INSERT INTO Proposal (user_id, description, cost, approved) VALUES (?, ?, ?, ?)";
+                            db.run(sql, [proposal.userId, proposal.description, proposal.cost, proposal.approved], function (err) {
+                                if (err) {
+                                    reject(err);
+                                } else {
+                                    proposal.id = this.lastID;
+                                    resolve(proposal);
+                                }
+                            });
+                        }
                     });
                 }
             });
         });
     };
+
 
     /**
      * Modifica una proposta gia esistente dato il suo id e userId

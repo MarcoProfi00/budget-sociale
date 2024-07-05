@@ -77,10 +77,24 @@ LoginForm.propTypes = {
     login: PropTypes.func,
 }
 
-function LogoutButton(props) {
-    return (
-      <Button variant="outline-light" onClick={props.logout}>Logout</Button>
-    )
+function LogoutButton({ logout }) {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout(); // Assicurati che la funzione logout gestisca correttamente la disconnessione
+      navigate('/login'); // Naviga alla pagina di login dopo il logout
+    } catch (error) {
+      console.error('Errore durante il logout:', error);
+      // Gestisci eventuali errori qui
+    }
+  };
+
+  return (
+    <Button variant="outline-light" onClick={handleLogout}>
+      Logout
+    </Button>
+  );
 }
 
 LogoutButton.propTypes = {

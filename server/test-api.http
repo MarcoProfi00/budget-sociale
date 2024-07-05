@@ -60,13 +60,17 @@ PUT http://localhost:3001/api/nextfase HTTP/1.1
 GET http://localhost:3001/api/proposals/2 HTTP/1.1
 ###
 
+## Recupera la proposta in base al suo id
+GET http://localhost:3001/api/proposals/id/6 HTTP/1.1
+###
+
 ## Crea una nuova proposta (con tutti i campi eccetto l'ID)
 POST http://localhost:3001/api/proposals HTTP/1.1
 content-type: application/json
 
 {
     "description": "Bonifica zona paludosa",
-    "cost": 1800
+    "cost": 6000
 }
 ###
 

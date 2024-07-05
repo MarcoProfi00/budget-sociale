@@ -83,6 +83,22 @@
   ```
   - Error responses: `500 Internal Server Error` (generic error), `404 Proposals not found`
 
+- GET `/api/proposals/id/:proposalId`
+  - Description: Recupera la proposta in base al suo id
+  - Request body: _None_
+  - Response: `200 OK` (success)
+  - Response body: Oggetto Proposal
+  ``` json
+    {
+      "id": 1,
+      "userId": 2,
+      "description": "Acquisto di nuovi libri per la biblioteca comunitaria",
+      "cost": 500,
+      "approved": 0
+    }
+    ```
+  - Error responses: `500 Internal Server Error` (generic error), `404 Proposals not found`
+
 - POST `/api/proposals`
   - Description: Aggiunge una nuova proposta di uno specifico user
   - Request body: descrizione della proposta da aggiungere
@@ -107,19 +123,17 @@
       "approved": 0
     }
   ```
-  - Error responses: `409 Proposal Already Exists` (proposal already exists), `422 Unprocessable Entity` (invalid input), `503 Service Unavailable` (database error)
+  - Error responses: `409 Proposal Already Exists` (proposal already exists), `422 Unprocessable Entity` (invalid input), `503 Service Unavailable` (database error), `404 Budget Not Exists` (Budget Not Exist Error), `403 Cost of the proposal greater than the defined budget` (Proposal greather than budget)
 
 - PUT `/api/proposals/:id`
   - Description: Modifica la proposta di uno specificato utente
   - Request body: descrizione della proposta da modificare
-
   ``` json
   {
     "description": "Acquisto di nuovi libri per la biblioteca comunale",
     "cost": 300
   }
   ```
-
   - Response: `200 OK` (success)
   - Response body: Intera proposta aggiunta
   

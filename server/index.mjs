@@ -3,7 +3,7 @@ import morgan from 'morgan';
 import {check, validationResult} from 'express-validator'; // validation middleware
 import ProposalDAO from "./dao/proposalDAO.mjs";
 import Proposal, { Vote } from './components/Proposal.mjs';
-import { BudgetNotExistError, FaseError, NotAdminError, NotAdminErrorBudget, ProposalAlreadyExistsError, ProposalsNotFoundError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError } from './errors/proposalError.mjs';
+import { ProposalOverToBudgetError, BudgetNotExistError, FaseError, NotAdminError, NotAdminErrorBudget, ProposalAlreadyExistsError, ProposalsNotFoundError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError } from './errors/proposalError.mjs';
 import UserDAO from './dao/userDAO.mjs';
 import passport from 'passport';
 import LocalStrategy from 'passport-local';
@@ -219,6 +219,27 @@ app.get('/api/proposals/:userId', isLoggedIn, async (req, res) => {
 });
 
 /**
+ * Get della proposta dato il suo id
+ * GET /api/proposals/id/:proposalId
+ */
+app.get('/api/proposals/id/:proposalId', isLoggedIn, async (req, res) => {
+  try{
+    const result = await proposalDAO.getOnceProposalById(req.params.proposalId);
+    if(result.error){
+      res.status(404).json(result)
+    } else {
+      res.json(result);
+    }
+  } catch (err) {
+    if (err instanceof ProposalsNotFoundError) {
+      res.status(err.code).json({ error: err.message });
+    } else {
+      res.status(500).end();
+    }
+  }
+});
+
+/**
  * Crea una nuova proposta, fornendo le informazioni necessarie
  * POST /api/proposals
  */
@@ -238,7 +259,7 @@ app.post('/api/proposals', isLoggedIn, [
     const result = await proposalDAO.addProposal(proposal)
     res.json(result);
   } catch (err) {
-    if (err instanceof ProposalAlreadyExistsError) {
+    if (err instanceof ProposalAlreadyExistsError, BudgetNotExistError, ProposalOverToBudgetError) {
       res.status(err.code).json({ error: err.message });
     } else {
       res.status(503).json({error: `Database error during the creation of the new proposal: ${err}`});

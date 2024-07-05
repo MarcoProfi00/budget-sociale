@@ -7,6 +7,8 @@ const NOT_ADMIN = "Only the admin can do the reset"
 const NOT_ADMIN_BUDGET = "Only the admin can insert the budget or next phase"
 const BUDGET_NOT_EXIST = "Budget not found"
 const FASE_ERROR = "The phase not allowed"
+const PROPOSAL_OVER_TO_BUDGET = "Cost of the proposal greater than the defined budget"
+
 
 
 export class ProposalsNotFoundError extends Error{
@@ -77,6 +79,14 @@ export class FaseError extends Error{
     constructor(){
         super();
         this.message = FASE_ERROR;
+        this.code = 403;
+    }
+}
+
+export class ProposalOverToBudgetError extends Error{
+    constructor(){
+        super();
+        this.message = PROPOSAL_OVER_TO_BUDGET;
         this.code = 403;
     }
 }
