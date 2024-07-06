@@ -111,6 +111,9 @@ async function getMyProposals(userId) {
     return proposals;
 }
 
+/**
+ * Restituisce la proposta dato il suo id
+ */
 async function getProposalById(proposalId) {
     try {
       const response = await fetch(`${SERVER_URL}/proposals/id/${proposalId}`, {
@@ -171,6 +174,29 @@ async function updateProposal(proposal) {
     }).then(handleInvalidResponse)
 }
 
+/**
+ * Restiuisce tutte le proposte
+ */
+async function getAllProposals() {
+    const proposals = await fetch(SERVER_URL + `/proposals/`, { credentials: 'include' })
+        .then(handleInvalidResponse)
+        .then(response => response.json())
+        .then(mapApiProposalsToProposals);
+
+    return proposals;
+}
+
+async function voteProposal(userId, proposalId, score) {
+    return await fetch (SERVER_URL + `/proposals/${proposalId}/vote`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ score: score })
+    }).then(handleInvalidResponse)
+}
+
 function handleInvalidResponse(response) {
     if (!response.ok) { throw Error(response.statusText) }
     let type = response.headers.get('Content-Type');
@@ -200,7 +226,9 @@ const API = {
     getProposalById, 
     deleteProposal,
     addProposal,
-    updateProposal
+    updateProposal,
+    getAllProposals,
+    voteProposal
 }
 
 export default API;

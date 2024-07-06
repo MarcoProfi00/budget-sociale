@@ -93,7 +93,7 @@ GET http://localhost:3001/api/proposals HTTP/1.1
 ###
 
 ## Vota la terza proposta
-POST http://localhost:3001/api/proposals/3/vote HTTP/1.1
+POST http://localhost:3001/api/proposals/2/vote HTTP/1.1
 content-type: application/json
 
 {

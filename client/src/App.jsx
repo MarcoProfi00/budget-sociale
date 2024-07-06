@@ -18,6 +18,7 @@ import { PhaseProvider, usePhase } from './contexts/PhaseContext.jsx';
 import Header from "./components/Header.jsx";
 import Phase0Page from './components/Phase0Page';
 import Phase1Page from './components/Phase1Page.jsx';
+import Phase2Page from './components/Phase2Page.jsx';
 import AddEditProposalForm from './components/AddEditProposalForm.jsx';
 
 
@@ -96,11 +97,14 @@ function App() {
               <Route path="/myproposals" element={<Phase1Page user={user} />} />
               <Route path="/addproposal" element={<AddEditProposalForm user={user} mode="add" />} />
               <Route path="/editproposal/:proposalId" element={<AddEditProposalForm user={user} mode="edit" />} />
+              <Route path="/allproposals" element={<Phase2Page user={user}/>} />
               <Route path="*" element={<NotFoundLayout />} />
               <Route path="/" element={
                 loggedIn ? (
                   fase === 1 ? (
                     <Navigate replace to="/myproposals" />
+                  ) : fase === 2 ? (
+                    <Navigate replace to ="/allproposals" />
                   ) : (
                     <Phase0Page user={user} />
                   )

@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 
-import { Container, Col, Navbar, Form, Button, Alert, Row} from 'react-bootstrap';
+import { Container, Col, Card, Form, Button, Alert, Row} from 'react-bootstrap';
 import { usePhase } from '../contexts/PhaseContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -79,7 +79,7 @@ const Phase0Page = ({ user }) => {
         <div>
           <Row>
             <Col>
-              <h1>Fase {fase}</h1>
+              <h1>Fase 0</h1>
             </Col>
           </Row>
           <Form
@@ -112,11 +112,17 @@ const Phase0Page = ({ user }) => {
         </div>
       ) : (
         <Row>
-          <Col>
-            <h3>La fase di definizione delle proposte è ancora chiusa.</h3>
-            <h4>Riprovare più tardi!</h4>
+        <Col>
+          {/* Card bootstrap per il budget e la fase */}
+          <Card className="card bg-light mb-3" style={{ maxWidth: '100rem', marginTop: '1rem' }}>
+            <Card.Header className="text-black">Fase: 0</Card.Header>
+            <Card.Body className="text-black">
+              <Card.Title>La fase di definizione delle proposte è ancora chiusa</Card.Title>
+              <Card.Text> Riprovare più tardi </Card.Text>
+            </Card.Body>
+          </Card>
           </Col>
-        </Row>
+      </Row>
       )}
        <Alert variant="success" show={successAlert} onClose={() => setSuccessAlert(false)} dismissible>
         Budget impostato con successo

@@ -6,7 +6,6 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Container, Row, Col, Button, Card, Table, Alert } from 'react-bootstrap';
 import { PhaseProvider, usePhase } from '../contexts/PhaseContext.jsx';
-import AddEditProposalForm from './AddEditProposalForm.jsx';
 import API from '../API';
 
 const Phase1Page = ({ user }) => {
@@ -64,7 +63,7 @@ const Phase1Page = ({ user }) => {
   const handlePassaFase2 = async () => {
     try {
       await avanzareFase();
-      //navigate('/myproposals'); // Naviga alla Phase1Page dopo aver avanzato la fase
+      navigate('/allproposals');
     } catch (error) {
       setFeedbackFromError(error);
       setShowAlert(true);
@@ -124,36 +123,36 @@ const Phase1Page = ({ user }) => {
               <Card.Text> Definizione delle proposte </Card.Text>
             </Card.Body>
           </Card>
-          </Col>
-        </Row>
+        </Col>
+      </Row>
 
-        <Row>
-          <Col as='h2'> My Proposals </Col>
-        </Row>
+      <Row>
+        <Col as='h2'> My Proposals </Col>
+      </Row>
         
-        <Row>
-          <Col lg={10} className="mx-auto">
-            {/* Tabella Proposals */}
-            <MyProposalsTable proposals={proposals} handleDeleteProposal={handleDeleteProposal}>
-            </MyProposalsTable>
-          </Col>
-        </Row>
+      <Row>
+        <Col lg={10} className="mx-auto">
+          {/* Tabella Proposals */}
+          <MyProposalsTable proposals={proposals} handleDeleteProposal={handleDeleteProposal}>
+          </MyProposalsTable>
+        </Col>
+      </Row>
 
-        <Row>
-          <Col className="text-end mt-3">
-          {/* Bottone che naviga alla pagina di add/delete */}
-          <Link to="/addproposal" className="btn btn-success">
-            <i className="bi bi-plus-lg" style={{ fontSize: '0.75rem' }}></i> Add Proposal
-          </Link>
-          </Col>
-        </Row>
+      <Row>
+        <Col className="text-end mt-3">
+        {/* Bottone che naviga alla pagina di add/delete */}
+        <Link to="/addproposal" className="btn btn-success">
+          <i className="bi bi-plus-lg" style={{ fontSize: '0.75rem' }}></i> Add Proposal
+        </Link>
+        </Col>
+      </Row>
           
-        {/* Se l'utente loggato è un admin renderizza il bottone Passa alla fase 2 */}
-        {user && user.role === 'Admin' && (
-          <Button onClick={handlePassaFase2} variant="primary" className="float-end mt-3">
-            Passa alla fase 2
-          </Button>
-        )}
+      {/* Se l'utente loggato è un admin renderizza il bottone Passa alla fase 2 */}
+      {user && user.role === 'Admin' && (
+        <Button onClick={handlePassaFase2} variant="primary" className="float-end mt-3">
+          Passa alla fase 2
+        </Button>
+      )}
 
 
     </Container>
