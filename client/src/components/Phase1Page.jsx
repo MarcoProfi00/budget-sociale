@@ -83,7 +83,6 @@ const Phase1Page = ({ user }) => {
       setAlertMessage("Proposta eliminata correttamente")
       setTimeout(() => {
         setAlertMessage(null);
-        //navigate('/myproposals');
       }, 3000)
     } catch (error) {
       console.log("Errore nell'eliminazione della proposta:", error);

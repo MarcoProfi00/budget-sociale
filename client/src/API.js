@@ -1,5 +1,6 @@
 import BudgetSociale from "../../server/components/BudgetSociale.mjs";
-import Proposal from "../../server/components/Proposal.mjs";
+import Proposal from "../../server/components/Proposal.mjs"
+import { ProposalWithVote } from "../../server/components/Proposal.mjs";
 
 const SERVER_URL = 'http://localhost:3001/api';
 
@@ -141,7 +142,7 @@ async function deleteProposal(userId, proposalId) {
     return await fetch(SERVER_URL + `/proposals/${proposalId}`, { 
         method: 'DELETE',
         credentials: 'include',
-    }).then(handleInvalidResponse)
+    }).then(handleInvalidResponse);
 }
 
 /**
@@ -156,7 +157,7 @@ async function addProposal(proposal) {
         },
         credentials: 'include',
         body: JSON.stringify(proposal)
-    }).then(handleInvalidResponse)
+    }).then(handleInvalidResponse);
 }
 
 /**
@@ -171,7 +172,7 @@ async function updateProposal(proposal) {
         },
         credentials: 'include',
         body: JSON.stringify(proposal)
-    }).then(handleInvalidResponse)
+    }).then(handleInvalidResponse);
 }
 
 /**
@@ -186,6 +187,12 @@ async function getAllProposals() {
     return proposals;
 }
 
+/**
+ * Vota la proposta selezionata con lo score indicato
+ * @param {*} userId id dell'utente loggato
+ * @param {*} proposalId id della proposta da votare
+ * @param {*} score puntaggio assegnato alla proposta
+ */
 async function voteProposal(userId, proposalId, score) {
     return await fetch (SERVER_URL + `/proposals/${proposalId}/vote`, {
         method: 'POST',
@@ -194,8 +201,35 @@ async function voteProposal(userId, proposalId, score) {
         },
         credentials: 'include',
         body: JSON.stringify({ score: score })
+    }).then(handleInvalidResponse);
+}
+
+/**
+ * Restituisce le proposte votate da un utente
+ * @param {*} userId id dell'utente 
+ */
+async function getMyPreferences(userId) {
+    const preferences = await fetch(SERVER_URL + `/proposals/voted/${userId}`, { credentials: 'include' })
+        .then(handleInvalidResponse)
+        .then(response => response.json())
+        .then(mapApiPreferencesToPreferences);
+    return preferences;
+}
+
+/**
+ * Elimina la preferenza selezionata
+ * @param {*} userId id dell'utente
+ * @param {*} proposalId id della proposta
+
+ */
+async function deletePreference(userId, proposalId) {
+    return await fetch(SERVER_URL + `/proposals/voted/delete/${proposalId}`, {
+        method: 'DELETE',
+        credentials: 'include',
     }).then(handleInvalidResponse)
 }
+
+
 
 function handleInvalidResponse(response) {
     if (!response.ok) { throw Error(response.statusText) }
@@ -215,6 +249,10 @@ function mapApiProposalsToProposals(apiProposals){
     return apiProposals.map(proposal => new Proposal(proposal.id, proposal.userId, proposal.description, proposal.cost, proposal.approved));
 }
 
+function mapApiPreferencesToPreferences(apiPreferences){
+    return apiPreferences.map(preference => new ProposalWithVote(preference.id, preference.description, preference.cost, preference.score));
+}
+
 const API = {
     logIn, 
     getUserInfo, 
@@ -228,7 +266,9 @@ const API = {
     addProposal,
     updateProposal,
     getAllProposals,
-    voteProposal
+    voteProposal,
+    getMyPreferences,
+    deletePreference
 }
 
 export default API;

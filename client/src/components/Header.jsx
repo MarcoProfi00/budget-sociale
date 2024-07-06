@@ -8,12 +8,10 @@ function Header(props) {
             <Container fluid className="gap-3 align-items-center">
                 <Row>
                     <Col xs={4} md={4}>
-                        <a href="/" className="d-flex align-items-center justify-content-center justify-content-md-start h-100 link-light text-decoration-none">
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                                <i className="bi bi-cash-coin me-2"></i>
-                                <span className="h5 mb-0">Budget Sociale</span>
-                            </div>
-                        </a>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <i className="bi bi-cash-coin me-2" style={{ color: 'white' }}></i>
+                            <span className="h5 mb-0" style={{ color: 'white' }}>Budget Sociale</span>
+                        </div>
                     </Col>
                     <Col xs={5} md={8} className="d-flex align-items-center justify-content-end">
                         {props.loggedIn &&

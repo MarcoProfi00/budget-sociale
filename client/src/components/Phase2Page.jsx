@@ -88,7 +88,7 @@ const Phase2Page = ({ user }) => {
       if (error.response && error.response.data && error.response.data.message) {
         setAlertMessage(`Errore nel registrare il voto: ${error.response.data.message}`);
       } else {
-        setAlertMessage("Errore nel registrare il voto");
+        setAlertMessage("Puoi esprimere un solo voto per ogni proposta");
       }
       setTimeout(() => {
         setAlertMessage(null);
@@ -101,7 +101,7 @@ const Phase2Page = ({ user }) => {
     <Container fluid className="gap-3 align-items-center">
       {/* Alert */}
       {alertMessage && (
-        <Alert variant="success" onClose={() => setAlertMessage(null)} dismissible>
+        <Alert variant={alertVariant} onClose={() => setAlertMessage(null)} dismissible>
           {alertMessage}
         </Alert>
       )}
@@ -132,17 +132,13 @@ const Phase2Page = ({ user }) => {
       </Col>
     </Row>
 
-    {/*
     <Row>
-        <Col className="text-end mt-3">
-        {/* Bottone che naviga alla pagina My Preferences */}
-        {/*
-        <Link to="/mypreferences" className="btn btn-success">
-          <i className="bi bi-plus-lg" style={{ fontSize: '0.75rem' }}></i> Add Proposal
+      <Col className="text-start mt-3">
+        <Link to="/mypreferences" className="btn btn-warning">
+          My Preferences
         </Link>
-        </Col>
+      </Col>
     </Row>
-        */}
 
     {/* Se l'utente loggato è un admin renderizza il bottone Passa alla fase 3 */}
     {user && user.role === 'Admin' && (
