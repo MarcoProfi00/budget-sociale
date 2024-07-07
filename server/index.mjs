@@ -431,10 +431,8 @@ app.get('/api/proposal/ordered', isLoggedIn, async (req, res) => {
  * PUT /api/proposal/approve
  */
 app.put('/api/proposal/approve', isLoggedIn, async (req, res) => {
-  //const budget = 2000; //per ora passo il budget come parametro
   try{
-    //const result = await proposalDAO.approveProposals(req.body.budget)
-    const result = await proposalDAO.approveProposals(req.body.budget)
+    const result = await proposalDAO.approveProposals()
     if(result.error){
       res.status(404).json(result);
     } else {
@@ -449,7 +447,7 @@ app.put('/api/proposal/approve', isLoggedIn, async (req, res) => {
  * Recupera le proposte approvate in ordine decrescente di total_score
  * GET /api/proposal/approved
  */
-app.get('/api/proposal/approved', isLoggedIn, async (req, res) => {
+app.get('/api/proposal/approved', async (req, res) => {
   try{
     const result = await proposalDAO.getProposalApproved()
     if(result.error) {

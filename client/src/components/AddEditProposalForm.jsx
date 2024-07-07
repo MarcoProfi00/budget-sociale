@@ -35,7 +35,8 @@ const AddEditProposalForm = ({ proposal, mode, user, getProposalById }) => {
           setFase(budgetSociale.current_fase); // Imposto la fase nel contesto
           setBudget(budgetSociale.amount); // Imposto il budget nel contesto
         } catch (error) {
-          console.error('Error fetching budget and fase:', error);
+          //console.error('Error fetching budget and fase:', error);
+          setAlertMessage('Errore nel recupero del budget e della fase');
         }
       };
   
@@ -55,7 +56,8 @@ const AddEditProposalForm = ({ proposal, mode, user, getProposalById }) => {
               setCost(proposal.cost);
             }
           } catch (error) {
-            console.error('Error fetching proposal details:', error);
+            //console.error('Error fetching proposal details:', error);
+            setAlertMessage('Errore nel recupero dei dettagli della proposta');
           }
         };
     

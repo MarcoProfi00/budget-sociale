@@ -1,5 +1,5 @@
 import BudgetSociale from "../../server/components/BudgetSociale.mjs";
-import Proposal from "../../server/components/Proposal.mjs"
+import Proposal, { ProposalsApproved, ProposalsNotApproved } from "../../server/components/Proposal.mjs"
 import { ProposalWithVote } from "../../server/components/Proposal.mjs";
 
 const SERVER_URL = 'http://localhost:3001/api';
@@ -220,10 +220,56 @@ async function getMyPreferences(userId) {
  * Elimina la preferenza selezionata
  * @param {*} userId id dell'utente
  * @param {*} proposalId id della proposta
-
  */
 async function deletePreference(userId, proposalId) {
     return await fetch(SERVER_URL + `/proposals/voted/delete/${proposalId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+    }).then(handleInvalidResponse)
+}
+
+/**
+ * Approva le proposte
+ * - Le proposte vengono approvate in base al budget la cui ricerca avviene direttamente nel DAO
+ */
+async function approveProposals(userId) {
+    return await fetch(SERVER_URL + "/proposal/approve", {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+    }).then(handleInvalidResponse)
+}
+
+/**
+ * Restiuisce le proposte approvate ordinate in modo decrescente per total score
+ */
+async function getApprovedProposals() {
+    const approvedProposals = await fetch(SERVER_URL + "/proposal/approved")
+        .then(handleInvalidResponse)
+        .then(response => response.json())
+        .then(mapApiApprovedProposalsToApprovedProposals);
+    return approvedProposals
+}
+
+/**
+ * Restiuisce le proposte non approvate ordinate in modo decrescente per total score
+ */
+async function getNotApprovedProposals() {
+    const notApprovedProposals = await fetch(SERVER_URL + "/proposal/notApproved", { credentials: 'include' })
+        .then(handleInvalidResponse)
+        .then(response => response.json())
+        .then(mapApiNotApprovedProposalsToNotApprovedProposals);
+    return notApprovedProposals;
+}
+
+/**
+ * Ricomincia il processo da zero, eliminando budget, proposte e votazioni
+ * @returns 
+ */
+async function restartProcess(userId) {
+    return await fetch(SERVER_URL + "/proposal/restart", {
         method: 'DELETE',
         credentials: 'include',
     }).then(handleInvalidResponse)
@@ -253,6 +299,14 @@ function mapApiPreferencesToPreferences(apiPreferences){
     return apiPreferences.map(preference => new ProposalWithVote(preference.id, preference.description, preference.cost, preference.score));
 }
 
+function mapApiApprovedProposalsToApprovedProposals(apiApprovedProposals){
+    return apiApprovedProposals.map(approvedProposal => new ProposalsApproved(approvedProposal.id, approvedProposal.description, approvedProposal.member_name, approvedProposal.cost, approvedProposal.total_score));
+}
+
+function mapApiNotApprovedProposalsToNotApprovedProposals(apiNotApprovedProposals){
+    return apiNotApprovedProposals.map(notApprovedProposal => new ProposalsNotApproved(notApprovedProposal.id, notApprovedProposal.description, notApprovedProposal.cost, notApprovedProposal.total_score));
+}
+
 const API = {
     logIn, 
     getUserInfo, 
@@ -268,7 +322,11 @@ const API = {
     getAllProposals,
     voteProposal,
     getMyPreferences,
-    deletePreference
+    deletePreference,
+    approveProposals,
+    getApprovedProposals,
+    getNotApprovedProposals,
+    restartProcess
 }
 
 export default API;

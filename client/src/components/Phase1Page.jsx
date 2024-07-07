@@ -27,7 +27,8 @@ const Phase1Page = ({ user }) => {
         setFase(budgetSociale.current_fase); // Imposto la fase nel contesto
         setBudget(budgetSociale.amount); // Imposto il budget nel contesto
       } catch (error) {
-        console.error('Error fetching budget and fase:', error);
+        //console.error('Error fetching budget and fase:', error);
+        setAlertMessage('Errore nel recupero del budget e della fase');
       }
     };
   
@@ -47,8 +48,8 @@ const Phase1Page = ({ user }) => {
           setProposals([]); // Pulisco le proposte se l'utente non è autenticato
         }
       } catch (error) {
-        console.error('Error fetching proposals:', error);
-        setAlertMessage('Errore nel recupero delle proposte');
+        //console.error('Error fetching proposals:', error);
+        //setAlertMessage('Errore nel recupero delle proposte');
       }
     };
 
@@ -85,7 +86,8 @@ const Phase1Page = ({ user }) => {
         setAlertMessage(null);
       }, 3000)
     } catch (error) {
-      console.log("Errore nell'eliminazione della proposta:", error);
+      //console.log("Errore nell'eliminazione della proposta:", error);
+      setAlertMessage('Errore nell\'eliminazione della proposta');
     }
   }
 

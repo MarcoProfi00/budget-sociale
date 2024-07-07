@@ -22,7 +22,8 @@ const MyPreferences = ({ user }) => {
           setPreferences([]);
         }
       } catch (error) {
-        console.error('Error fetching preferences:', error);
+        //console.error('Error fetching preferences:', error);
+        setAlertMessage('Errore nel recupero delle preferenze');
       }
     };
 
@@ -45,7 +46,8 @@ const MyPreferences = ({ user }) => {
         setAlertMessage(null);
       }, 3000);
     } catch (error) {
-      console.error("Errore nell'eliminazione della preferenza:", error);
+      //console.error("Errore nell'eliminazione della preferenza:", error);
+      setAlertMessage("Errore nell'eliminazione della preferenza");
     }
   };
 

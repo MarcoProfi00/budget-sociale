@@ -17,6 +17,10 @@ const Phase2Page = ({ user }) => {
     const navigate = useNavigate();
     const { proposalId } = useParams();
 
+  const setFeedbackFromError = (error) => {
+      setFeedback(error.message);
+  };
+
   /**
    * UseEffect per recuperare fase e budget attuale
    */
@@ -27,12 +31,14 @@ const Phase2Page = ({ user }) => {
         setFase(budgetSociale.current_fase); // Imposto la fase nel contesto
         setBudget(budgetSociale.amount); // Imposto il budget nel contesto
       } catch (error) {
-        console.error('Error fetching budget and fase:', error);
+        //console.error('Error fetching budget and fase:', error);
+        setAlertMessage('Errore nel recupero del budget e della fase');
       }
     };
   
     fetchData(); // Chiamo la funzione all'avvio del componente
   }, []);
+
 
 
   /**
@@ -43,7 +49,8 @@ const Phase2Page = ({ user }) => {
   const handlePassaFase3 = async () => {
     try {
       await avanzareFase();
-      //navigate('/allproposals');
+      await API.approveProposals(user.id)
+      navigate('/approvedproposals');
     } catch (error) {
       setFeedbackFromError(error);
       setShowAlert(true);
@@ -63,7 +70,7 @@ const Phase2Page = ({ user }) => {
           setProposals([]) //Pulisco le proposte se l'utente non è autenticato
         }
       } catch (error) {
-        console.error('Error fetching proposals:', error);
+        //console.error('Error fetching proposals:', error);
         setAlertMessage('Errore nel recupero delle proposte');
       }
     };
@@ -71,6 +78,11 @@ const Phase2Page = ({ user }) => {
     fetchProposals(user);
   }, [user])
 
+  /**
+   * Funzione per votare una proposta in base al suo id
+   * @param {*} proposalId id della proposta da votare
+   * @param {*} score puntaggio assegnato alla proposta (da 1 a 3)
+   */
   const handleVoteProposal = async(proposalId, score) => {
     try {
 
@@ -83,7 +95,7 @@ const Phase2Page = ({ user }) => {
         setAlertMessage(null);
       }, 3000);
     } catch(error) {
-      console.error("Errore nel registrare il voto:", error);
+      //console.error("Errore nel registrare il voto:", error);
       setAlertVariant('danger');
       if (error.response && error.response.data && error.response.data.message) {
         setAlertMessage(`Errore nel registrare il voto: ${error.response.data.message}`);
@@ -148,11 +160,6 @@ const Phase2Page = ({ user }) => {
     )}
 
     </Container>
-    /*
-    <div>
-      <h1>Welcome to Phase 2 - All Proposals</h1>
-    </div>
-    */
   );
 };
 

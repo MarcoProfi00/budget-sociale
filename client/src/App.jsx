@@ -19,8 +19,11 @@ import Header from "./components/Header.jsx";
 import Phase0Page from './components/Phase0Page';
 import Phase1Page from './components/Phase1Page.jsx';
 import Phase2Page from './components/Phase2Page.jsx';
+import Phase3Page from './components/Phase3Page.jsx';
 import AddEditProposalForm from './components/AddEditProposalForm.jsx';
 import MyPreferences from './components/MyPreferences.jsx';
+import NotApprovedProposalsPage from './components/NotApprovedProposalsPage.jsx';
+import NotLoggedPage from './components/NotLoggedPage.jsx';
 
 
 function App() {
@@ -86,7 +89,6 @@ function App() {
     }
   };
 
-
   return (
     <FeedbackContext.Provider value={{ setFeedback, setFeedbackFromError }}>
       <PhaseProvider>
@@ -95,32 +97,30 @@ function App() {
           <Container fluid className="flex-grow-1 d-flex flex-column">
             <Routes>
               <Route path="/login" element={loggedIn ? <Navigate replace to="/" /> : <LoginForm login={handleLogin} />} />
+              <Route path="/setbudget" element={<Phase0Page user={user} />} />
               <Route path="/myproposals" element={<Phase1Page user={user} />} />
               <Route path="/addproposal" element={<AddEditProposalForm user={user} mode="add" />} />
               <Route path="/editproposal/:proposalId" element={<AddEditProposalForm user={user} mode="edit" />} />
               <Route path="/allproposals" element={<Phase2Page user={user}/>} />
               <Route path="/mypreferences" element={<MyPreferences user={user} />} />
+              <Route path="/approvedproposals" element={<Phase3Page user={user} />} />
+              <Route path="/notapprovedproposals" element={<NotApprovedProposalsPage user={user} />} />
+              <Route path="/notlogged" element={<NotLoggedPage />} />
               <Route path="*" element={<NotFoundLayout user={user}/>} />
-              <Route path="/" element={
-                loggedIn ? (
-                  fase === 1 ? (
-                    <Navigate replace to="/myproposals" />
-                  ) : fase === 2 ? (
-                    <Navigate replace to ="/allproposals" />
+              <Route
+                path="/"
+                element={
+                  loggedIn ? (
+                    fase === 1 ? <Navigate replace to="/myproposals" /> :
+                    fase === 2 ? <Navigate replace to="/allproposals" /> :
+                    fase === 3 ? <Navigate replace to="/approvedproposals" /> :
+                    <Navigate replace to="/setbudget" />
                   ) : (
-                    <Phase0Page user={user} />
+                    <Navigate replace to="/notlogged" />
                   )
-                ) : (
-                  <Navigate replace to="/login" />
-                )
-              } />
+                }
+              />
             </Routes>
-            {/*<div>
-              Current Phase: {fase}
-              <br />
-              Current Budget: {budget}
-            </div>
-            */}
           </Container>
         </div>
       </PhaseProvider>

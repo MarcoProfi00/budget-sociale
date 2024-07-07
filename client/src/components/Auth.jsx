@@ -83,7 +83,7 @@ function LogoutButton({ logout }) {
   const handleLogout = async () => {
     try {
       await logout(); // Assicurati che la funzione logout gestisca correttamente la disconnessione
-      navigate('/login'); // Naviga alla pagina di login dopo il logout
+      navigate('/'); // Naviga alla pagina di login dopo il logout
     } catch (error) {
       console.error('Errore durante il logout:', error);
       // Gestisci eventuali errori qui

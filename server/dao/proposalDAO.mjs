@@ -331,7 +331,7 @@ export default function ProposalDAO() {
             //richiamo la promise precedente per ottenere l'array di proposte ordinate in base allo score totale
             const proposals = await this.getProposalsOrderedToScore();
             
-            let sql = "SELECT * FROM Budget";
+            let sql = "SELECT * FROM BudgetSociale";
             db.get(sql, (err, row) => {
                 if(err) {
                     reject(err);
