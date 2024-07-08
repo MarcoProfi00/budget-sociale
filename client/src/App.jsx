@@ -1,19 +1,14 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './App.css';
-
 import React, { useEffect, useState, useContext } from 'react';
-
 import { Container } from 'react-bootstrap/';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { LoginForm } from './components/Auth.jsx';
 import { NotFoundLayout } from './components/PageLayout.jsx';
-
 import API from "./API.js";
-
 import FeedbackContext from './contexts/FeedbackContext.js';
 import { PhaseProvider, usePhase } from './contexts/PhaseContext.jsx';
-
 
 import Header from "./components/Header.jsx";
 import Phase0Page from './components/Phase0Page';
@@ -25,17 +20,15 @@ import MyPreferences from './components/MyPreferences.jsx';
 import NotApprovedProposalsPage from './components/NotApprovedProposalsPage.jsx';
 import NotLoggedPage from './components/NotLoggedPage.jsx';
 
-
+/**
+ * Componente che gestisce l'applicazione principale
+ */
 function App() {
   
-  const [user, setUser] = useState(null);
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [user, setUser] = useState(null); //Stato per gesire l'utente
+  const [loggedIn, setLoggedIn] = useState(false); //Stato per indicare se l'utente è loggato o meno
   const { setFeedback, setFeedbackFromError } = useContext(FeedbackContext);
-  const { fase, setFase, budget, setBudget } = usePhase(); // Ottengo fase e funzione per ottenere budget e fase dal contesto PhaseContext
-
-  //Stato usato per forzare un refresh del budgetSociale
-  const [shouldRefresh, setShouldRefresh] = useState(true);
-
+  const { fase, setFase, budget, setBudget } = usePhase(); //Stati ottenuti dal contesto PhaseContext per gestire fase corrente e budget
 
   /**
    * Effetto per caricare le informazioni dell'utente all'avvio dell'applicazione
@@ -56,7 +49,7 @@ function App() {
 
 
   /**
-   * Funzione che gestisce il login dell'user
+   * Funzione che gestisce il login dell'utente'
    * @param {*} credentials 
    */
   const handleLogin = async (credentials) => {
@@ -66,10 +59,10 @@ function App() {
       setLoggedIn(true);
       setFeedback(`Welcome, ${user.name}`);
 
-      // Dopo il login, ottieni la fase e il budget dal server e aggiorna lo stato
+      // Dopo il login, ottengo la fase e il budget attraverso API e aggiorno lo stato
       const budgetSociale = await API.getBudgetAndFase();
-      setFase(budgetSociale.current_fase); // Imposta la fase nel contesto
-      setBudget(budgetSociale.amount); // Imposta il budget nel contesto
+      setFase(budgetSociale.current_fase); //Imposto la fase nel contesto
+      setBudget(budgetSociale.amount); // Imposto il budget nel contesto
 
     } catch (error) {
       setFeedbackFromError(error);
@@ -77,7 +70,7 @@ function App() {
   };
 
   /**
-   * Funzione che gestisce il logout dell'user
+   * Funzione che gestisce il logout dell'utente
    */
   const handleLogout = async () => {
     try {

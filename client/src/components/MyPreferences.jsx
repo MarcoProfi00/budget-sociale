@@ -23,7 +23,7 @@ const MyPreferences = ({ user }) => {
         }
       } catch (error) {
         //console.error('Error fetching preferences:', error);
-        setAlertMessage('Errore nel recupero delle preferenze');
+        //setAlertMessage('Errore nel recupero delle preferenze');
       }
     };
 
@@ -68,7 +68,7 @@ const MyPreferences = ({ user }) => {
           <Card className="card bg-light mb-3" style={{ maxWidth: '100rem', marginTop: '0.5rem' }}>
             <Card.Header className="text-black">Preferenze espresse</Card.Header>
             <Card.Body className="text-black">
-              <Card.Title>Le mie proposte preferite</Card.Title>
+              <Card.Title>Proposte preferite</Card.Title>
               <Card.Text>Puoi revocare le tue preferenze</Card.Text>
             </Card.Body>
           </Card>

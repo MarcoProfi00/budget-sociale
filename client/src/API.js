@@ -85,7 +85,8 @@ async function getBudgetAndFase() {
       console.error('Error fetching budget and fase:', error);
       throw error; // Rilancia l'errore per gestirlo più a monte
     }
-  }
+}
+
 /**
  * Avanza la fase
  */
@@ -97,7 +98,6 @@ async function nextFase(){
         },
         credentials: 'include'
     }).then(handleInvalidResponse)
-
 }
 
 /**
@@ -131,7 +131,7 @@ async function getProposalById(proposalId) {
       console.error('Error fetching proposal by ID:', error);
       throw error;
     }
-  }
+}
 
 /**
  * Elimina la proposta dell'utente in base all'id della proposta
@@ -230,7 +230,7 @@ async function deletePreference(userId, proposalId) {
 
 /**
  * Approva le proposte
- * - Le proposte vengono approvate in base al budget la cui ricerca avviene direttamente nel DAO
+ * Le proposte vengono approvate in base al budget la cui ricerca avviene direttamente nel DAO
  */
 async function approveProposals(userId) {
     return await fetch(SERVER_URL + "/proposal/approve", {
@@ -265,8 +265,7 @@ async function getNotApprovedProposals() {
 }
 
 /**
- * Ricomincia il processo da zero, eliminando budget, proposte e votazioni
- * @returns 
+ * Ricomincia il processo da zero, eliminando budget, proposte e votazioni 
  */
 async function restartProcess(userId) {
     return await fetch(SERVER_URL + "/proposal/restart", {
@@ -275,8 +274,9 @@ async function restartProcess(userId) {
     }).then(handleInvalidResponse)
 }
 
-
-
+/**
+ * Gesisce le risposte ottenute dalle chiamate fetch
+ */
 function handleInvalidResponse(response) {
     if (!response.ok) { throw Error(response.statusText) }
     let type = response.headers.get('Content-Type');
@@ -284,11 +284,6 @@ function handleInvalidResponse(response) {
         throw new TypeError(`Expected JSON, got ${type}`)
     }
     return response;
-}
-
-
-function mapApiBudgetSocialeToBudgetSociale(apiBudgetSociale) {
-    return apiBudgetSociale.map(budgetSociale => new BudgetSociale(budgetSociale.id, budgetSociale.amount, budgetSociale.current_fase))
 }
 
 function mapApiProposalsToProposals(apiProposals){

@@ -128,7 +128,7 @@ const Phase1Page = ({ user }) => {
       </Row>
 
       <Row>
-        <Col as='h2'> My Proposals </Col>
+        <Col as='h2'> Le mie proposte <i class="bi bi-journal-text" ></i></Col>
       </Row>
         
       <Row>
@@ -156,20 +156,23 @@ const Phase1Page = ({ user }) => {
           >
             <span className="d-inline-block">
               <Link to="/addproposal" className={`btn btn-success ${proposals.length >= 3 ? 'disabled' : ''}`} aria-disabled={proposals.length >= 3}>
-                <i className="bi bi-plus-lg" style={{ fontSize: '0.75rem' }}></i> Add Proposal
+                 Nuova Proposta <i className="bi bi-plus-lg" style={{ fontSize: '0.75rem' }}></i>
               </Link>
             </span>
           </OverlayTrigger>
         </Col>
       </Row>
-          
-      {/* Se l'utente loggato è un admin renderizza il bottone Passa alla fase 2 */}
-      {user && user.role === 'Admin' && (
-        <Button onClick={handlePassaFase2} variant="primary" className="float-end mt-3">
-          Passa alla fase 2
-        </Button>
-      )}
-
+      
+      <Row className="justify-content-end mt-3">
+        <Col xs="auto">
+          {/* Se l'utente loggato è un admin renderizza il bottone Passa alla fase 2 */}
+          {user && user.role === 'Admin' && (
+            <Button onClick={handlePassaFase2} className="mt-3" variant="success">
+              Fase 2 <i className="bi bi-arrow-right-circle fs-6"></i>
+            </Button>
+          )}
+        </Col>
+      </Row>
 
     </Container>
   );

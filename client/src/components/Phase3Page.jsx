@@ -81,8 +81,7 @@ const Phase3Page = ({ user }) => {
                     <Card className="card bg-light mb-3" style={{ maxWidth: '100rem', marginTop: '1rem' }}>
                         <Card.Header className="text-black">Fase: 3</Card.Header>
                         <Card.Body className="text-black">
-                        <Card.Title>Proposte approvate</Card.Title>
-                        <Card.Text> Qui puoi trovare l'elenco delle proposte approvate <br></br>
+                        <Card.Text> Qui puoi visualizzare l'elenco delle proposte approvate <br></br>
                         Budget: {budget}</Card.Text>
                         </Card.Body>
                     </Card>
@@ -90,7 +89,7 @@ const Phase3Page = ({ user }) => {
             </Row>
 
             <Row>
-                <Col as='h2'> Approved Proposals </Col>
+                <Col as='h2'> Proposte Approvate <i class="bi bi-journal-check"></i></Col>
             </Row>
 
             
@@ -124,7 +123,7 @@ const Phase3Page = ({ user }) => {
                     Riavvia il processo
                     <OverlayTrigger
                         placement="top"
-                        overlay={<Tooltip>Attenzione riavviando il processo si torna alla fase 0 e tutte le proposte verranno eliminate</Tooltip>}
+                        overlay={<Tooltip>Attenzione riavviando il processo tutte le proposte e le preferenze verranno eliminate</Tooltip>}
                     >
                         <i className="bi bi-exclamation-circle" style={{ fontSize: '17px', marginLeft: '5px' }}></i>
                     </OverlayTrigger>

@@ -125,15 +125,15 @@ const Phase2Page = ({ user }) => {
             <Card.Header className="text-black">Fase: 2</Card.Header>
             <Card.Body className="text-black">
               <Card.Title>Preferenze Proposte</Card.Title>
-              <Card.Text> Esprimi la tua preferenza per le proposte. <br></br>
-              Puoi esprimere un puntaggio da 1 a 3 per ogni preferenza.</Card.Text>
+              <Card.Text> Esprimi la tua preferenza per le proposte <br></br>
+              <strong>Attenzione: Puoi esprimere un punteggio da 1 a 3 per ogni preferenza</strong></Card.Text>
             </Card.Body>
           </Card>
         </Col>
     </Row>
 
     <Row>
-        <Col as='h2'> All Proposals </Col>
+        <Col as='h2'> Proposte disponibili <i class="bi bi-journal-text"></i></Col>
     </Row>
 
     
@@ -147,17 +147,21 @@ const Phase2Page = ({ user }) => {
     <Row>
       <Col className="text-start mt-3">
         <Link to="/mypreferences" className="btn btn-warning">
-          My Preferences
+          Le mie preferenze <i className="bi bi-bookmark-check fs-6"></i>
         </Link>
       </Col>
     </Row>
 
-    {/* Se l'utente loggato è un admin renderizza il bottone Passa alla fase 3 */}
-    {user && user.role === 'Admin' && (
-        <Button onClick={handlePassaFase3} variant="primary" className="float-end mt-3">
-          Passa alla fase 3
-        </Button>
-    )}
+    <Row className="justify-content-end mt-3">
+        <Col xs="auto">
+          {/* Se l'utente loggato è un admin renderizza il bottone Passa alla fase 2 */}
+          {user && user.role === 'Admin' && (
+            <Button onClick={handlePassaFase3} className="mt-3" variant="success">
+              Fase 3 <i className="bi bi-arrow-right-circle fs-6"></i>
+            </Button>
+          )}
+        </Col>
+      </Row>
 
     </Container>
   );
@@ -195,13 +199,26 @@ function AllProposalsTable({ proposals, user, handleVoteProposal }) {
                               </>
                           ) : (
                               <Dropdown onSelect={(eventKey) => handleVoteProposal(proposal.id, parseInt(eventKey))}>
-                                  <Dropdown.Toggle variant="primary" id="dropdown-basic">
+                                  <Dropdown.Toggle variant="success" id="dropdown-basic">
                                       Vota
                                   </Dropdown.Toggle>
+                                  
                                   <Dropdown.Menu>
-                                    <Dropdown.Item eventKey="1">1</Dropdown.Item>
-                                    <Dropdown.Item eventKey="2">2</Dropdown.Item>
-                                    <Dropdown.Item eventKey="3">3</Dropdown.Item>
+                                    <Dropdown.Item eventKey="1">
+                                      <span style={{ fontSize: '1.2rem' }}>
+                                        1 <i className="bi bi-emoji-frown" style={{ color: 'red', fontSize: '1.2rem' }}></i>
+                                      </span>
+                                    </Dropdown.Item>
+                                    <Dropdown.Item eventKey="2">
+                                      <span style={{ fontSize: '1.2rem' }}>
+                                        2 <i className="bi bi-emoji-neutral" style={{ color: 'orange', fontSize: '1.2rem' }}></i>
+                                      </span>
+                                    </Dropdown.Item>
+                                    <Dropdown.Item eventKey="3">
+                                      <span style={{ fontSize: '1.2rem' }}>
+                                        3 <i className="bi bi-emoji-smile" style={{ color: 'green', fontSize: '1.2rem' }}></i>
+                                      </span>
+                                    </Dropdown.Item>
                                   </Dropdown.Menu>
                               </Dropdown>
                           )}

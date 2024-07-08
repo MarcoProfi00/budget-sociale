@@ -1,10 +1,11 @@
 import PropTypes from "prop-types";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import { LogoutButton, LoginButton } from './Auth';
+import '../App.css';
 
 function Header(props) {
     return (
-        <header className="py-1 py-md-3 border-bottom bg-primary">
+        <header className="py-1 py-md-3 border-bottom dark-green-bg">
             <Container fluid className="gap-3 align-items-center">
                 <Row>
                     <Col xs={4} md={4}>
@@ -13,6 +14,7 @@ function Header(props) {
                             <span className="h5 mb-0" style={{ color: 'white' }}>Budget Sociale</span>
                         </div>
                     </Col>
+                    
                     <Col xs={5} md={8} className="d-flex align-items-center justify-content-end">
                         {props.loggedIn &&
                             <form className={`d-none d-md-block w-100 me-3`}>

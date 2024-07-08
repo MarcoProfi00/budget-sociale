@@ -61,7 +61,6 @@ const NotApprovedProposalsPage = ({ user }) => {
                     <Card className="card bg-light mb-3" style={{ maxWidth: '100rem', marginTop: '1rem' }}>
                         <Card.Header className="text-black">Fase: 3</Card.Header>
                         <Card.Body className="text-black">
-                        <Card.Title>Proposte non approvate</Card.Title>
                         <Card.Text> Qui puoi trovare l'elenco delle proposte non approvate</Card.Text>
                         </Card.Body>
                     </Card>
@@ -69,7 +68,7 @@ const NotApprovedProposalsPage = ({ user }) => {
             </Row>
 
             <Row>
-                <Col as='h2'> Not Approved Proposals </Col>
+                <Col as='h2'> Proposte non approvate <i class="bi bi-journal-x"></i></Col>
             </Row>
 
             <Row>

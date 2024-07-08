@@ -1,5 +1,9 @@
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import '../App.css';
+
 import { useState, useEffect } from 'react';
-import { Alert, Button, Col, Form, Row } from 'react-bootstrap';
+import { Alert, Button, Col, Form, Row, Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from "prop-types";
 
@@ -35,39 +39,46 @@ function LoginForm(props) {
   return (
     <Row className="mt-3 vh-100 justify-content-md-center">
       <Col md={4}>
-        <h1 className="pb-3">Login</h1>
-        <Form onSubmit={handleSubmit}>
-          <Alert
-            dismissible
-            show={show}
-            onClose={() => setShow(false)}
-            variant="danger"
-          >
-            {errorMessage}
-          </Alert>
-          <Form.Group className="mb-3" controlId="username">
-            <Form.Label>Email</Form.Label>
-            <Form.Control
-              type="email"
-              value={username}
-              placeholder="Example: nome.cognome@example.it"
-              onChange={(ev) => setUsername(ev.target.value)}
-              required
-            />
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="password">
-            <Form.Label>Password</Form.Label>
-            <Form.Control
-              type="password"
-              value={password}
-              placeholder="Enter the password."
-              onChange={(ev) => setPassword(ev.target.value)}
-              required
-              minLength={2}
-            />
-          </Form.Group>
-          <Button className="mt-3" type="submit">Login</Button>
-        </Form>
+        <Card className="p-4">
+          <Card.Header className="text-center">
+            <i className="bi bi-person-circle fs-1 mb-3"></i> {/* Icona di utente */}
+            <h1>Login</h1>
+          </Card.Header>
+          <Card.Body>
+            <Form onSubmit={handleSubmit}>
+              <Alert
+                dismissible
+                show={show}
+                onClose={() => setShow(false)}
+                variant="danger"
+              >
+                {errorMessage}
+              </Alert>
+              <Form.Group className="mb-3" controlId="username">
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  type="email"
+                  value={username}
+                  placeholder="Example: nome.cognome@example.it"
+                  onChange={(ev) => setUsername(ev.target.value)}
+                  required
+                />
+              </Form.Group>
+              <Form.Group className="mb-3" controlId="password">
+                <Form.Label>Password</Form.Label>
+                <Form.Control
+                  type="password"
+                  value={password}
+                  placeholder="Enter the password"
+                  onChange={(ev) => setPassword(ev.target.value)}
+                  required
+                  minLength={2}
+                />
+              </Form.Group>
+              <Button className="mt-3 btn-success" type="submit">Login</Button>
+            </Form>
+          </Card.Body>
+        </Card>
       </Col>
     </Row>
   );
@@ -86,7 +97,6 @@ function LogoutButton({ logout }) {
       navigate('/'); // Naviga alla pagina di login dopo il logout
     } catch (error) {
       console.error('Errore durante il logout:', error);
-      // Gestisci eventuali errori qui
     }
   };
 
