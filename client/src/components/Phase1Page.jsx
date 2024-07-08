@@ -4,7 +4,7 @@ import '../App.css';
 
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Container, Row, Col, Button, Card, Table, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Button, Card, Table, Alert, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { PhaseProvider, usePhase } from '../contexts/PhaseContext.jsx';
 import API from '../API';
 
@@ -141,10 +141,25 @@ const Phase1Page = ({ user }) => {
 
       <Row>
         <Col className="text-end mt-3">
-        {/* Bottone che naviga alla pagina di add/delete */}
-        <Link to="/addproposal" className="btn btn-success">
-          <i className="bi bi-plus-lg" style={{ fontSize: '0.75rem' }}></i> Add Proposal
-        </Link>
+          {/* Bottone che naviga alla pagina di add/delete */}
+          <OverlayTrigger
+            placement="top"
+            overlay={
+              proposals.length >= 3 ? (
+                <Tooltip id="tooltip-disabled">
+                  Non puoi aggiungere più di 3 proposte.
+                </Tooltip>
+              ) : (
+                <></>
+              )
+            }
+          >
+            <span className="d-inline-block">
+              <Link to="/addproposal" className={`btn btn-success ${proposals.length >= 3 ? 'disabled' : ''}`} aria-disabled={proposals.length >= 3}>
+                <i className="bi bi-plus-lg" style={{ fontSize: '0.75rem' }}></i> Add Proposal
+              </Link>
+            </span>
+          </OverlayTrigger>
         </Col>
       </Row>
           

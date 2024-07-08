@@ -101,12 +101,21 @@ const Phase3Page = ({ user }) => {
                 </Col>
             </Row>
 
+            {/* Bottone per le proposte non approvate */}
             {user ? (
             <Link to="/notapprovedproposals">
                 <Button variant="danger">Not Approved Proposals</Button>
             </Link>
             ) : (
-                <Button variant="danger" disabled>Not Approved Proposals</Button>
+                <OverlayTrigger
+                    overlay={<Tooltip id="tooltip-disabled">Accedi per visualizzare le proposte non approvate</Tooltip>}
+                >
+                    <span className="d-inline-block">
+                        <Button variant="danger" disabled style={{ pointerEvents: 'none' }}>
+                            Not Approved Proposals
+                        </Button>
+                    </span>
+                </OverlayTrigger>
             )}
 
             {/* Se l'utente loggato è un admin renderizza il bottone Passa alla fase 3 */}

@@ -3,7 +3,7 @@ import morgan from 'morgan';
 import {check, validationResult} from 'express-validator'; // validation middleware
 import ProposalDAO from "./dao/proposalDAO.mjs";
 import Proposal, { Vote } from './components/Proposal.mjs';
-import { ProposalOverToBudgetError, BudgetNotExistError, FaseError, NotAdminError, NotAdminErrorBudget, ProposalAlreadyExistsError, ProposalsNotFoundError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError } from './errors/proposalError.mjs';
+import { ProposalOverToBudgetError, BudgetNotExistError, FaseError, NotAdminError, NotAdminErrorBudget, ProposalAlreadyExistsError, ProposalsNotFoundError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError, AlreadyThreeProposalsError } from './errors/proposalError.mjs';
 import UserDAO from './dao/userDAO.mjs';
 import passport from 'passport';
 import LocalStrategy from 'passport-local';
@@ -256,10 +256,10 @@ app.post('/api/proposals', isLoggedIn, [
   const proposal = new Proposal(undefined, req.user.id, req.body.description, req.body.cost, 0)
 
   try {
-    const result = await proposalDAO.addProposal(proposal)
+    const result = await proposalDAO.addProposal(proposal, req.user.id)
     res.json(result);
   } catch (err) {
-    if (err instanceof ProposalAlreadyExistsError, BudgetNotExistError, ProposalOverToBudgetError) {
+    if (err instanceof ProposalAlreadyExistsError, BudgetNotExistError, ProposalOverToBudgetError, AlreadyThreeProposalsError) {
       res.status(err.code).json({ error: err.message });
     } else {
       res.status(503).json({error: `Database error during the creation of the new proposal: ${err}`});

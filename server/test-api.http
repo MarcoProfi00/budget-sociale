@@ -69,8 +69,8 @@ POST http://localhost:3001/api/proposals HTTP/1.1
 content-type: application/json
 
 {
-    "description": "Bonifica zona paludosa",
-    "cost": 6000
+    "description": "Bonifica zonaa paludosa",
+    "cost": 1000
 }
 ###
 

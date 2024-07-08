@@ -149,7 +149,7 @@ async function deleteProposal(userId, proposalId) {
  * Aggiunge una nuova proposta
  * @param {*} proposal proposta da aggiungere
  */
-async function addProposal(proposal) {
+async function addProposal(proposal, userId) {
     return await fetch(SERVER_URL + '/proposals', {
         method: 'POST',
         headers: {

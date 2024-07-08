@@ -8,6 +8,7 @@ const NOT_ADMIN_BUDGET = "Only the admin can insert the budget or next phase"
 const BUDGET_NOT_EXIST = "Budget not found"
 const FASE_ERROR = "The phase not allowed"
 const PROPOSAL_OVER_TO_BUDGET = "Cost of the proposal greater than the defined budget"
+const ALREADY_THREE_PROPOSALS_ERROR = "User has already 3 proposals";
 
 
 
@@ -87,6 +88,14 @@ export class ProposalOverToBudgetError extends Error{
     constructor(){
         super();
         this.message = PROPOSAL_OVER_TO_BUDGET;
+        this.code = 403;
+    }
+}
+
+export class AlreadyThreeProposalsError extends Error{
+    constructor(){
+        super();
+        this.message = ALREADY_THREE_PROPOSALS_ERROR;
         this.code = 403;
     }
 }

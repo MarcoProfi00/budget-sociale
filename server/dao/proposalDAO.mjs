@@ -4,7 +4,7 @@
 
 import Proposal, { ProposalWithVote, ProposalsApproved, ProposalsNotApproved, ProposalsWhithSumOfScore } from "../components/Proposal.mjs";
 import db from "../db/db.mjs"
-import { ProposalOverToBudgetError, ProposalsNotFoundError, ProposalAlreadyExistsError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError, NotAdminError, BudgetNotExistError } from "../errors/proposalError.mjs";
+import { ProposalOverToBudgetError, ProposalsNotFoundError, ProposalAlreadyExistsError, AlreadyThreeProposalsError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError, NotAdminError, BudgetNotExistError } from "../errors/proposalError.mjs";
 
 
 function mapRowsToProposal(rows){
@@ -77,38 +77,54 @@ export default function ProposalDAO() {
      * @param {*} proposal oggetto proposta da aggiungere
      * @returns La promise si risolve ritornando la proposta appena aggiunta
      */
-    this.addProposal = (proposal) => {
+    this.addProposal = (proposal, userId) => {
         return new Promise((resolve, reject) => {
-            let sql = "SELECT amount FROM BudgetSociale";
-            db.get(sql, (err, row) => {
-                if (err) {
+            //query per controllare quante proposte ha l'utente
+            let sql = "SELECT COUNT(*) AS count FROM Proposal WHERE Proposal.user_id = ?"
+            db.get(sql, [userId], (err, row) => {
+                if(err) {
                     reject(err);
-                } else if (!row) {
-                    reject(new BudgetNotExistError());
                 } else {
-                    let budget = row.amount;
-                    sql = "SELECT * FROM Proposal WHERE description = ?";
-                    db.get(sql, [proposal.description], (err, row) => {
-                        if (err) {
-                            reject(err);
-                        } else if (row) {
-                            reject(new ProposalAlreadyExistsError());
-                        } else if (proposal.cost > budget) {
-                            reject(new ProposalOverToBudgetError());
-                        } else {
-                            sql = "INSERT INTO Proposal (user_id, description, cost, approved) VALUES (?, ?, ?, ?)";
-                            db.run(sql, [proposal.userId, proposal.description, proposal.cost, proposal.approved], function (err) {
-                                if (err) {
-                                    reject(err);
-                                } else {
-                                    proposal.id = this.lastID;
-                                    resolve(proposal);
-                                }
-                            });
-                        }
-                    });
+                    //mi prendo il numero di proposte
+                    let number = row.count
+                    //console.log(proposal.user_id)
+                    console.log(number)
+                    if(number >= 3) {
+                        reject(new AlreadyThreeProposalsError())
+                    } else {
+                        sql = "SELECT amount FROM BudgetSociale";
+                        db.get(sql, (err, row) => {
+                            if (err) {
+                                reject(err);
+                            } else if (!row) {
+                                reject(new BudgetNotExistError());
+                            } else {
+                                let budget = row.amount;
+                                sql = "SELECT * FROM Proposal WHERE description = ?";
+                                db.get(sql, [proposal.description], (err, row) => {
+                                    if (err) {
+                                        reject(err);
+                                    } else if (row) {
+                                        reject(new ProposalAlreadyExistsError());
+                                    } else if (proposal.cost > budget) {
+                                        reject(new ProposalOverToBudgetError());
+                                    } else {
+                                        sql = "INSERT INTO Proposal (user_id, description, cost, approved) VALUES (?, ?, ?, ?)";
+                                        db.run(sql, [proposal.userId, proposal.description, proposal.cost, proposal.approved], function (err) {
+                                            if (err) {
+                                                reject(err);
+                                            } else {
+                                                proposal.id = this.lastID;
+                                                resolve(proposal);
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    } 
                 }
-            });
+            })
         });
     };
 

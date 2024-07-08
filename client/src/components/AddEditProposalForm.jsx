@@ -10,7 +10,7 @@ import API from '../API'; // Assicurati di importare correttamente l'API
  * @param {*} param0 Props in input
  * @returns 
  */
-const AddEditProposalForm = ({ proposal, mode, user, getProposalById }) => {
+const AddEditProposalForm = ({ proposal, mode, user }) => {
     const { proposalId } = useParams(); //estrae dall'URL proposalId
     const { fase, setFase, budget, setBudget, avanzareFase } = usePhase(); //context per gestire fase e stato del budget
     const navigate = useNavigate();
@@ -84,6 +84,13 @@ const AddEditProposalForm = ({ proposal, mode, user, getProposalById }) => {
           cost,
           approved: 0
         };
+
+        // Controllo se la descrione è un numero
+        if (!isNaN(description)) {
+          setAlertVariant('danger');
+          setAlertMessage('La descrizione della proposta non può essere un numero');
+          return;
+        }
     
         setWaiting(true);
     
