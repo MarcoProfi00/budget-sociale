@@ -11,17 +11,23 @@ import API from '../API';
 
 const Phase0Page = ({ user }) => {
   const navigate = useNavigate();
-  const { fase, avanzareFase } = usePhase();
+  const { fase, avanzareFase } = usePhase(); 
   const { setFeedback, setFeedbackFromError } = useContext(FeedbackContext);
-  const [budget, setBudget] = useState('');
+  const [budget, setBudget] = useState(''); //Stato per il budget
   const [showAlert, setShowAlert] = useState(false);
   const [alreadySetBudgetAlert, setAlreadySetBudgetAlert] = useState(false);
   const [successAlert, setSuccessAlert] = useState(false);
 
+  /**
+   * Setto il budget in base all'evento
+   */
   const handleBudgetChange = (e) => {
     setBudget(e.target.value);
   };
 
+  /**
+   * Funzione per settare il budget quando premo il pulsante
+   */
   const handleBudgetSubmit = async (e) => {
     e.preventDefault();
 
@@ -36,7 +42,7 @@ const Phase0Page = ({ user }) => {
         setFeedbackFromError(new Error('È possibile inserire solo un budget.'));
         setShowAlert(true);
       } else {
-        await API.initApp(budget);
+        await API.initApp(budget); //chiamo API per inizializzare l'applicazione
         setFeedback('Budget impostato con successo');
         setSuccessAlert(true);
         setTimeout(() => {
@@ -51,6 +57,9 @@ const Phase0Page = ({ user }) => {
     }
   };
 
+  /**
+   * Funzione per passare alla fase successiva (pulsante fase1)
+   */
   const handlePassaFase1 = async () => {
     try {
       await avanzareFase();
@@ -61,9 +70,6 @@ const Phase0Page = ({ user }) => {
     }
   };
 
-  const handleAlreadySetBudgetAlertClose = () => {
-    setAlreadySetBudgetAlert(false);
-  };
 
   return (
     <Container fluid className="gap-3 align-items-center">

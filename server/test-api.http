@@ -1,6 +1,5 @@
 # This file can be used for thesting the API with a dedicated Visual Studio Code extension.
 
-
 ## Execute Log In
 POST http://localhost:3001/api/sessions HTTP/1.1
 content-type: application/json
