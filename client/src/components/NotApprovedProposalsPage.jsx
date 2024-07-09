@@ -29,7 +29,7 @@ const NotApprovedProposalsPage = ({ user }) => {
                 }    
             } catch(error) {
                 //console.error('Error fetching not approved proposals:', error);
-                setAlertMessage('Errore nel recupero delle proposte non approvate');
+                //setAlertMessage('Errore nel recupero delle proposte non approvate');
             }
         };
 

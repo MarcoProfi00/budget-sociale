@@ -2,7 +2,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import '../App.css';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Alert, Button, Col, Form, Row, Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from "prop-types";
@@ -25,16 +25,18 @@ function LoginForm(props) {
       const credentials = { username, password };
 
       props.login(credentials)
-        .then (() => navigate("/")) // Naviga alla home dopo il login riuscito
-        .catch( (err) => {
-          if(err.message === "Unauthorized") 
-            setErrorMessage("Invalid username and/or password"); //mesaggio da mostrare se il login non va a buon fine
-          else
+        .then(() => {
+          navigate("/"); // Naviga alla home dopo il login riuscito
+        })
+        .catch((err) => {
+          if (err.message === "Unauthorized") {
+            setErrorMessage("Credenziali errate, riprovare"); // Messaggio da mostrare se il login non va a buon fine
+          } else {
             setErrorMessage(err.message);
+          }
           setShow(true); // Mostra l'Alert di errore
         });
-  };
-
+    };
 
   return (
     <Row className="mt-3 vh-100 justify-content-md-center">
@@ -85,8 +87,8 @@ function LoginForm(props) {
 }
 
 LoginForm.propTypes = {
-    login: PropTypes.func,
-}
+    login: PropTypes.func.isRequired,
+};
 
 function LogoutButton({ logout }) {
   const navigate = useNavigate();
@@ -94,7 +96,7 @@ function LogoutButton({ logout }) {
   const handleLogout = async () => {
     try {
       await logout(); // Assicurati che la funzione logout gestisca correttamente la disconnessione
-      navigate('/'); // Naviga alla pagina di login dopo il logout
+      navigate('/');
     } catch (error) {
       console.error('Errore durante il logout:', error);
     }
@@ -108,14 +110,14 @@ function LogoutButton({ logout }) {
 }
 
 LogoutButton.propTypes = {
-    logout: PropTypes.func
-}
+    logout: PropTypes.func.isRequired,
+};
 
 function LoginButton() {
     const navigate = useNavigate();
     return (
-      <Button variant="outline-light" onClick={()=> navigate('/login')}>Login</Button>
-    )
+      <Button variant="outline-light" onClick={() => navigate('/login')}>Login</Button>
+    );
 }
 
 export { LoginForm, LogoutButton, LoginButton };

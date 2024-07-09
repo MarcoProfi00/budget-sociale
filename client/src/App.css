@@ -37,3 +37,13 @@ i.bi {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.5); }
 }
+
+.hourglass-icon {
+  font-size: 10rem; /* Imposta la dimensione desiderata */
+  animation: scale 4s linear infinite alternate;
+}
+
+@keyframes scale {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.5); }
+}

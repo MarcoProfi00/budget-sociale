@@ -93,7 +93,7 @@ GET http://localhost:3001/api/proposals HTTP/1.1
 ###
 
 ## Vota la terza proposta
-POST http://localhost:3001/api/proposals/2/vote HTTP/1.1
+POST http://localhost:3001/api/proposals/64/vote HTTP/1.1
 content-type: application/json
 
 {
@@ -106,7 +106,7 @@ GET http://localhost:3001/api/proposals/voted/2 HTTP/1.1
 ###
 
 ## Elimina la votazione di una proposta precedentemente votata dall'utente
-DELETE http://localhost:3001/api/proposals/voted/delete/3 HTTP/1.1
+DELETE http://localhost:3001/api/proposals/voted/delete/64 HTTP/1.1
 ###
 
 ## Recupera le proposte ordinate in base allo score_totale

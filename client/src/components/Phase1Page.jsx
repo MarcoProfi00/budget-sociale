@@ -128,7 +128,7 @@ const Phase1Page = ({ user }) => {
       </Row>
 
       <Row>
-        <Col as='h2'> Le mie proposte <i class="bi bi-journal-text" ></i></Col>
+        <Col as='h2'> Le mie proposte <i className="bi bi-journal-text" ></i></Col>
       </Row>
         
       <Row>

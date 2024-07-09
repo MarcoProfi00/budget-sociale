@@ -357,7 +357,13 @@ export default function ProposalDAO() {
                         if(totalCost + proposals[i].cost <= budget){
                             selectedProposals.push(proposals[i]);
                             totalCost += proposals[i].cost;
+                            if(totalCost >= budget) {
+                                break
+                            }
+                        } else {
+                            break
                         }
+                        
                     }
                     sql = "BEGIN TRANSACTION;";
                     for(let i = 0; i < selectedProposals.length; i++){

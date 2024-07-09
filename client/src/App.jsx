@@ -65,7 +65,9 @@ function App() {
       setBudget(budgetSociale.amount); // Imposto il budget nel contesto
 
     } catch (error) {
+      setLoggedIn(false);
       setFeedbackFromError(error);
+      throw error;
     }
   };
 

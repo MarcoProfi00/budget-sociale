@@ -31,7 +31,6 @@ const Phase2Page = ({ user }) => {
         setFase(budgetSociale.current_fase); // Imposto la fase nel contesto
         setBudget(budgetSociale.amount); // Imposto il budget nel contesto
       } catch (error) {
-        //console.error('Error fetching budget and fase:', error);
         setAlertMessage('Errore nel recupero del budget e della fase');
       }
     };
@@ -133,7 +132,7 @@ const Phase2Page = ({ user }) => {
     </Row>
 
     <Row>
-        <Col as='h2'> Proposte disponibili <i class="bi bi-journal-text"></i></Col>
+        <Col as='h2'> Proposte disponibili <i className="bi bi-journal-text"></i></Col>
     </Row>
 
     

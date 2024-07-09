@@ -113,7 +113,7 @@ const Phase0Page = ({ user }) => {
               </Card.Body>
             </Card>
             <div className="text-center">
-              <i className="bi bi-hourglass-split" style={{ fontSize: '8rem', color: '#003d04' }}></i>
+              <i className="bi bi-hourglass-split hourglass-icon" style={{ fontSize: '6rem', color: '#003d04' }}></i>
             </div>
 
           </Col>
@@ -128,5 +128,6 @@ const Phase0Page = ({ user }) => {
     </Container>
   );
 };
+
 
 export default Phase0Page;

@@ -42,7 +42,7 @@ const NotLoggedPage = () => {
 
       <Row>
         <Col className="icon-container">
-          <i class="bi bi-journal-text rotate-icon" style={{ fontSize: '6rem', color: '#006400' }}></i>
+          <i className="bi bi-journal-text rotate-icon" style={{ fontSize: '6rem', color: '#006400' }}></i>
         </Col>
       </Row>
     </Container>
