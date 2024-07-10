@@ -2,27 +2,24 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import '../App.css';
 
-
-
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Container, Row, Col, Card } from 'react-bootstrap';
 import { usePhase } from '../contexts/PhaseContext'; // Importa il contesto di fase
 
+/**
+ * Componente che gestisce la pagina dell'utente non loggato
+ */
 const NotLoggedPage = () => {
-  const { fase } = usePhase();
-  const navigate = useNavigate();
+  const { fase } = usePhase(); //Stato dal PhaseContext
+  const navigate = useNavigate(); //hook per navigare tra le pagine
 
-  // Effetto per gestire il reindirizzamento basato sulla fase
+  //Effetto per gestire il reindirizzamento basato sulla fase
   useEffect(() => {
     if (fase === 3) {
       navigate('/approvedproposals');
     }
   }, [fase, navigate]);
-
-  const handleLoginRedirect = () => {
-    navigate('/login');
-  };
 
   return (
     <Container fluid className="gap-3 align-items-center">

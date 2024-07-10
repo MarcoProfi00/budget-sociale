@@ -5,38 +5,24 @@ import '../App.css';
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Container, Row, Col, Button, Card, Table, Alert, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { PhaseProvider, usePhase } from '../contexts/PhaseContext.jsx';
+import { usePhase } from '../contexts/PhaseContext.jsx';
 import API from '../API';
 
+/**
+ * Componente che gestisce la pagina della fase 1
+ * In base all'user (prop) controllo se l'utente è admin o member
+ */
 const Phase1Page = ({ user }) => {
 
-  const { fase, setFase, budget, setBudget, avanzareFase } = usePhase();
-  const [proposals, setProposals] = useState([]); //Stato per ottenere le proposte
-  const [alertMessage, setAlertMessage] = useState(null); // Stato per gestire i messaggi di alert
-  const navigate = useNavigate();
-  const { proposalId } = useParams();
-
+  const { setFase, budget, setBudget, avanzareFase } = usePhase(); //Stati e funzionio per fase e budget presi dal context
+  const [proposals, setProposals] = useState([]); //Stato per ottenere le proprie proposte inizializzato ad array vuoto
+  const [alertMessage, setAlertMessage] = useState(null); // Stato per gestire i messaggi di alert inizializzato a null
+  const navigate = useNavigate(); //Hook per navigare tra le pagine
 
   /**
-   * UseEffect per recuperare fase e budget attuale
-   */
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const budgetSociale = await API.getBudgetAndFase();
-        setFase(budgetSociale.current_fase); // Imposto la fase nel contesto
-        setBudget(budgetSociale.amount); // Imposto il budget nel contesto
-      } catch (error) {
-        //console.error('Error fetching budget and fase:', error);
-        setAlertMessage('Errore nel recupero del budget e della fase');
-      }
-    };
-  
-    fetchData(); // Chiamo la funzione all'avvio del componente
-  }, []);
-
-  /**
-   * Effetto per gestire il recupero delle proposte dell'utente dato il suo id
+   * UseEffect per gestire il recupero delle proposte dato l'user
+   * Se l'utente esiste (user) chiamo l'API per ottenere le sue proposte e le imposto,
+   * altrimenti imposto lo stato a array vuoto
    */
   useEffect(() => {
     const fetchProposals = async () => {
@@ -45,19 +31,18 @@ const Phase1Page = ({ user }) => {
           const proposals = await API.getMyProposals(user.id);
           setProposals(proposals);
         } else {
-          setProposals([]); // Pulisco le proposte se l'utente non è autenticato
+          setProposals([]);
         }
       } catch (error) {
-        //console.error('Error fetching proposals:', error);
-        //setAlertMessage('Errore nel recupero delle proposte');
+        console.error('Errore nel recupero delle proposte:', error);
       }
     };
 
-    fetchProposals(user); //aggiorno le proposte se l'utente cambia
+    fetchProposals(user); //La richiamo se l'utente cambia
   }, [user]);
 
   /**
-   * Funzione chiamata quando premo "Passa alla fase 2"
+   * Funzione chiamata quando premo  il pulstante per passare alla fase 2"
    * Chiama avanzareFase() per impostare la fase da 0 a 1
    * Naviga alla Phase2Page
    */
@@ -78,7 +63,7 @@ const Phase1Page = ({ user }) => {
   const handleDeleteProposal = async(proposalId) => {
     try {
       await API.deleteProposal(user.id, proposalId);
-      //Setto la lista delle proposte dopo l'eliminazione di una proposta
+      //Aggiorno la lista delle proposte dopo l'eliminazione di una proposta
       setProposals(proposals.filter((proposal) => proposal.id !== proposalId));
       
       setAlertMessage("Proposta eliminata correttamente")
@@ -86,24 +71,11 @@ const Phase1Page = ({ user }) => {
         setAlertMessage(null);
       }, 3000)
     } catch (error) {
-      //console.log("Errore nell'eliminazione della proposta:", error);
+      console.log("Errore nell'eliminazione della proposta:", error);
       setAlertMessage('Errore nell\'eliminazione della proposta');
     }
   }
 
-  /**
-   * Funzione per filtrare la proposta basata sull'ID
-  */ 
-  const getProposalById = (id) => {
-    return proposals.find(proposal => proposal.id === id);
-  };
-
-  /**
-   * Resetta lo stato dell'alert
-   */
-  const handleCloseAlert = () => {
-    setAlertMessage(null);
-  }
 
   return (
     <Container fluid className="gap-3 align-items-center">
@@ -134,14 +106,12 @@ const Phase1Page = ({ user }) => {
       <Row>
         <Col lg={10} className="mx-auto">
           {/* Tabella Proposals */}
-          <MyProposalsTable proposals={proposals} handleDeleteProposal={handleDeleteProposal}>
-          </MyProposalsTable>
+          <MyProposalsTable proposals={proposals} handleDeleteProposal={handleDeleteProposal}> </MyProposalsTable>
         </Col>
       </Row>
 
       <Row>
         <Col className="text-end mt-3">
-          {/* Bottone che naviga alla pagina di add/delete */}
           <OverlayTrigger
             placement="top"
             overlay={
@@ -153,8 +123,9 @@ const Phase1Page = ({ user }) => {
                 <></>
               )
             }
-          >
+          >{/* Bottone che naviga alla pagina di add/delete */}
             <span className="d-inline-block">
+              {/* Se le proposte sono 3 il bottono risulta disabilitato con un messaggio di informazione */}
               <Link to="/addproposal" className={`btn btn-success ${proposals.length >= 3 ? 'disabled' : ''}`} aria-disabled={proposals.length >= 3}>
                  Nuova Proposta <i className="bi bi-plus-lg" style={{ fontSize: '0.75rem' }}></i>
               </Link>
@@ -165,7 +136,7 @@ const Phase1Page = ({ user }) => {
       
       <Row className="justify-content-end mt-3">
         <Col xs="auto">
-          {/* Se l'utente loggato è un admin renderizza il bottone Passa alla fase 2 */}
+          {/* Se l'utente loggato è un admin renderizza il bottone per passare alla fase 2 */}
           {user && user.role === 'Admin' && (
             <Button onClick={handlePassaFase2} className="mt-3" variant="success">
               Fase 2 <i className="bi bi-arrow-right-circle fs-6"></i>

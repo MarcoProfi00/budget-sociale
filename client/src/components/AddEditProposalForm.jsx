@@ -1,26 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
-import {  usePhase } from '../contexts/PhaseContext.jsx';
+import { usePhase } from '../contexts/PhaseContext.jsx';
 import { BiArrowBack } from 'react-icons/bi';
-import API from '../API'; // Assicurati di importare correttamente l'API
+import API from '../API';
 
 /**
- * Componente che viene renderizzato quando si aggiunge o modifica una proposta
- * @param {*} param0 Props in input
- * @returns 
+ * Componente che viene renderizzato quando si vuoloe aggiungere o modificare una proposta
+ * Props passate in input: proposal, mode (add o edit), user
  */
 const AddEditProposalForm = ({ proposal, mode, user }) => {
-    const { proposalId } = useParams(); //estrae dall'URL proposalId
-    const { fase, setFase, budget, setBudget, avanzareFase } = usePhase(); //context per gestire fase e stato del budget
-    const navigate = useNavigate();
+    const { proposalId } = useParams(); //estrae dall'URL l'id della proposta
+    const { setFase, budget, setBudget } = usePhase(); //Stati del context per gestire fase e budget
+    const navigate = useNavigate(); //hook per navigare tra le pagine
     const [waiting, setWaiting] = useState(false);
+    
     // Stato che contiene la description della proposta (se esiste), altrimenti stringa vuota
     const [description, setDescription] = useState(proposal ? proposal.description : '');
     // Stato che contiene il cost della proposta (se esiste), altrimenti 0
     const [cost, setCost] = useState(proposal ? proposal.cost : 0);
-    const [alertVariant, setAlertVariant] = useState('danger'); // Variante iniziale rossa
-    const [alertMessage, setAlertMessage] = useState(null);
+    
+    const [alertVariant, setAlertVariant] = useState('danger'); // Stato per l'alert inizialmente rosso
+    const [alertMessage, setAlertMessage] = useState(null); //Stato per il messaggio inizialmente null
 
     // Titolo dinamico del form in base alla modalità (Add o Edit)
     const formTitle = mode === 'edit' ? 'Modifica Proposta' : 'Aggiungi Nuova Proposta';
@@ -28,20 +29,21 @@ const AddEditProposalForm = ({ proposal, mode, user }) => {
     /**
      * UseEffect per recuperare fase e budget attuale
      */
-    useEffect(() => {
+    /*useEffect(() => {
       const fetchData = async () => {
         try {
           const budgetSociale = await API.getBudgetAndFase();
           setFase(budgetSociale.current_fase); // Imposto la fase nel contesto
           setBudget(budgetSociale.amount); // Imposto il budget nel contesto
         } catch (error) {
-          //console.error('Error fetching budget and fase:', error);
+          console.error('Error fetching budget and fase:', error);
           setAlertMessage('Errore nel recupero del budget e della fase');
         }
       };
   
-      fetchData(); // Chiamo la funzione all'avvio del componente
+      fetchData(); //Chiamo la funzione all'avvio del componente
     }, []);
+    */
 
     /**
      * UseEffect per recuperare i dettagli della proposta
@@ -56,7 +58,7 @@ const AddEditProposalForm = ({ proposal, mode, user }) => {
               setCost(proposal.cost);
             }
           } catch (error) {
-            //console.error('Error fetching proposal details:', error);
+            console.error('Error fetching proposal details:', error);
             setAlertMessage('Errore nel recupero dei dettagli della proposta');
           }
         };
@@ -65,38 +67,39 @@ const AddEditProposalForm = ({ proposal, mode, user }) => {
     }, [mode, proposalId]);
     
     /**
-     * Gestisce l'invio del form
-    */
+     * Funzione che gestisce l'invio del form
+     */
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        //controllo se il cost della proposal è maggiore del budget, con gli stati
-        if (parseInt(cost) > budget) {
+        //controllo se il cost della proposal è maggiore del budget
+        if (cost > budget) {
             setAlertVariant('danger');
             setAlertMessage('Il costo della proposta non può essere superiore del budget.');
             return;
         }
-    
-        //nuovo oggetto Proposal
-        const newProposal = {
-          userId: user.id,
-          description,
-          cost,
-          approved: 0
-        };
+        //Nuovo oggetto Proposal
+        const newProposal = { userId: user.id, description, cost, approved: 0 };
 
-        // Controllo se la descrione è un numero
+        // Controllo se la descrione è un numero (errore)
         if (!isNaN(description)) {
           setAlertVariant('danger');
           setAlertMessage('La descrizione della proposta non può essere un numero');
           return;
         }
-    
+
+        //Controllo se il costo della proposta è positivo
+        if(cost <= 0) {
+          setAlertVariant('danger');
+          setAlertMessage('Il costo della proposta deve essere maggiore di 0')
+          return
+        }
+
         setWaiting(true);
     
         try {
           if (mode === 'edit') {
-            await API.updateProposal({ id: proposalId, ...newProposal });
+            await API.updateProposal({ id: proposalId, ...newProposal }); //In input passo un oggetto che contiene l'id della proposta e le nuove nuove informazioni
             setAlertVariant('success');
             setAlertMessage('Proposta aggiornata correttamente.');
           } else {
@@ -107,7 +110,7 @@ const AddEditProposalForm = ({ proposal, mode, user }) => {
     
           setTimeout(() => {
             setAlertMessage(null);
-            navigate('/myproposals'); // Naviga alla pagina delle proposte dopo l'operazione
+            navigate('/myproposals'); // Naviga alla pagina delle proprie proposte dopo 3 sec
           }, 3000);
         } catch (error) {
           console.error('Error:', error);

@@ -9,24 +9,30 @@ import { useNavigate } from 'react-router-dom';
 import FeedbackContext from '../contexts/FeedbackContext';
 import API from '../API';
 
+/**
+ * Componente che gestisce la pagina della fase 0
+ * In base alla prop user gestico il caso in cui l'utente sia admin o member
+ */
 const Phase0Page = ({ user }) => {
-  const navigate = useNavigate();
-  const { fase, avanzareFase } = usePhase(); 
-  const { setFeedback, setFeedbackFromError } = useContext(FeedbackContext);
-  const [budget, setBudget] = useState(''); //Stato per il budget
+  const navigate = useNavigate(); //hook per navigare tra le pagie
+  const { fase, avanzareFase } = usePhase(); //Stati per la fase presi dela context
+  const { setFeedback, setFeedbackFromError } = useContext(FeedbackContext); //Stato per i feedback presi dal context
+  const [budget, setBudget] = useState(''); //Stato per il budget inizializzato a stringa vuota
+  
+  //Stati per gli alert (messaggi di errore)
   const [showAlert, setShowAlert] = useState(false);
   const [alreadySetBudgetAlert, setAlreadySetBudgetAlert] = useState(false);
   const [successAlert, setSuccessAlert] = useState(false);
 
   /**
-   * Setto il budget in base all'evento
+   * Setto lo stato del budget ogni volta che cambia l'input
    */
   const handleBudgetChange = (e) => {
     setBudget(e.target.value);
   };
 
   /**
-   * Funzione per settare il budget quando premo il pulsante
+   * Funzione per impostare il budget quando premo il pulsante
    */
   const handleBudgetSubmit = async (e) => {
     e.preventDefault();
@@ -38,6 +44,7 @@ const Phase0Page = ({ user }) => {
     }
 
     try {
+      //Controllo se è stato gia inserito un budget (non posso impostarlo due volte)
       if (alreadySetBudgetAlert) {
         setFeedbackFromError(new Error('È possibile inserire solo un budget.'));
         setShowAlert(true);
@@ -45,6 +52,7 @@ const Phase0Page = ({ user }) => {
         await API.initApp(budget); //chiamo API per inizializzare l'applicazione
         setFeedback('Budget impostato con successo');
         setSuccessAlert(true);
+        //L'alert scompare dopo 3 sec
         setTimeout(() => {
           setSuccessAlert(false);
         }, 3000);
@@ -59,6 +67,8 @@ const Phase0Page = ({ user }) => {
 
   /**
    * Funzione per passare alla fase successiva (pulsante fase1)
+   * Chiamo la funzione per avanzare di fase dal context
+   * Navigo verso myproposals (Phase1Page)
    */
   const handlePassaFase1 = async () => {
     try {
@@ -73,6 +83,8 @@ const Phase0Page = ({ user }) => {
 
   return (
     <Container fluid className="gap-3 align-items-center">
+      
+      {/* Controllo se l'user esiste ed è un admin */}
       {user && user.role === 'Admin' ? (
         <div>
           <Row>
@@ -80,14 +92,17 @@ const Phase0Page = ({ user }) => {
               <h1>Fase 0</h1>
             </Col>
           </Row>
+          
           <Form
             className="block-example border border-success rounded mt-4 mb-0 px-5 py-4 form-padding"
             onSubmit={handleBudgetSubmit}
           >
             <Form.Group className="mb-3">
+              
               <Form.Label>
                 <h3><i className="bi bi-piggy-bank text-success" style={{ fontSize: '3rem' }}></i> Inserisci il budget </h3> 
               </Form.Label>
+              
               <Form.Control
                 type="number"
                 min={0}
@@ -95,11 +110,14 @@ const Phase0Page = ({ user }) => {
                 value={budget}
                 onChange={handleBudgetChange}
               />
+
             </Form.Group>
+            
             <Button variant="success" type="submit">
               Imposta Budget
             </Button>
           </Form>
+          
           <Row className="justify-content-end mt-3">
             <Col xs="auto">
             <Button onClick={handlePassaFase1} className="mt-3" variant="success">
@@ -108,9 +126,10 @@ const Phase0Page = ({ user }) => {
             </Col>
           </Row>
         </div>
-      ) : (
+      ) : ( //Se l'user non è Admin
         <Row>
           <Col>
+            
             <Card className="card bg-light mb-3" style={{ maxWidth: '100rem', marginTop: '1rem' }}>
               <Card.Header className="text-black">Fase: 0</Card.Header>
               <Card.Body className="text-black">
@@ -118,16 +137,18 @@ const Phase0Page = ({ user }) => {
                 <Card.Text>Riprova più tardi</Card.Text>
               </Card.Body>
             </Card>
+
             <div className="text-center">
               <i className="bi bi-hourglass-split hourglass-icon" style={{ fontSize: '6rem', color: '#003d04' }}></i>
             </div>
-
           </Col>
         </Row>
       )}
+
       <Alert variant="success" show={successAlert} onClose={() => setSuccessAlert(false)} dismissible>
         Budget impostato con successo
       </Alert>
+      
       <Alert variant="danger" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
         {alreadySetBudgetAlert ? "È possibile inserire un solo budget." : "Errore nell'impostare il budget."}
       </Alert>

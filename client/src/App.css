@@ -47,3 +47,19 @@ i.bi {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.5); }
 }
+
+.bg-light-yellow {
+  background-color: #ffffcc;
+}
+
+.bg-light-green {
+  background-color: #c1eac5;
+}
+
+.bg-light-red {
+  background-color: #f9d9b9;
+}
+
+.table-custom-color {
+  background-color: #f9d9b9;
+}

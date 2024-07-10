@@ -3,52 +3,38 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import '../App.css';
 
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Card, Table, Alert, OverlayTrigger, Tooltip, Dropdown  } from 'react-bootstrap';
-import { PhaseProvider, usePhase } from '../contexts/PhaseContext.jsx';
+import { usePhase } from '../contexts/PhaseContext.jsx';
 import API from '../API';
 
+/**
+ * Componente che gestisce la pagina di votazione delle proposte
+ * Prop in input: user
+ */
 const Phase2Page = ({ user }) => {
 
-    const { fase, setFase, budget, setBudget, avanzareFase } = usePhase();
-    const [proposals, setProposals] = useState([]); //Stato per ottenere le proposte
-    const [alertMessage, setAlertMessage] = useState(null); // Stato per gestire i messaggi di alert
-    const [alertVariant, setAlertVariant] = useState('success'); //Stato per gestire il colore dell'alert
-    const navigate = useNavigate();
-    const { proposalId } = useParams();
+  const { setFase, setBudget, avanzareFase } = usePhase(); //Stati dal context per gestire budget e fase
+  const [proposals, setProposals] = useState([]); //Stato per ottenere le proposte, inizialmente array vuoto
+  const [alertMessage, setAlertMessage] = useState(null); // Stato per gestire i messaggi di alert, inizialmente null
+  const [alertVariant, setAlertVariant] = useState('success'); //Stato per gestire il colore dell'alert, inizialmente success
+  const navigate = useNavigate(); //hook per navigare tra le pagine
 
   const setFeedbackFromError = (error) => {
       setFeedback(error.message);
   };
 
-  /**
-   * UseEffect per recuperare fase e budget attuale
-   */
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const budgetSociale = await API.getBudgetAndFase();
-        setFase(budgetSociale.current_fase); // Imposto la fase nel contesto
-        setBudget(budgetSociale.amount); // Imposto il budget nel contesto
-      } catch (error) {
-        setAlertMessage('Errore nel recupero del budget e della fase');
-      }
-    };
-  
-    fetchData(); // Chiamo la funzione all'avvio del componente
-  }, []);
-
-
 
   /**
-   * Funzione chiamata quando premo "Passa alla fase 3"
-   * Chiama avanzareFase() per impostare la fase da 2 a 3
+   * Funzione chiamata quando premo il pulsante per passare alla fase 3
+   * Chiama avanzareFase() del context per impostare la fase da 2 a 3
+   * Chiama l'API per approvare le proposte
    * Naviga alla Phase3Page
    */
   const handlePassaFase3 = async () => {
     try {
       await avanzareFase();
-      await API.approveProposals(user.id)
+      await API.approveProposals(user.id) 
       navigate('/approvedproposals');
     } catch (error) {
       setFeedbackFromError(error);
@@ -69,12 +55,11 @@ const Phase2Page = ({ user }) => {
           setProposals([]) //Pulisco le proposte se l'utente non è autenticato
         }
       } catch (error) {
-        //console.error('Error fetching proposals:', error);
-        setAlertMessage('Errore nel recupero delle proposte');
+        console.error('Errore nel recupero delle proposte:', error);
       }
     };
 
-    fetchProposals(user);
+    fetchProposals(user); //Chiamo la funzione all'avvio del componente
   }, [user])
 
   /**
@@ -84,9 +69,7 @@ const Phase2Page = ({ user }) => {
    */
   const handleVoteProposal = async(proposalId, score) => {
     try {
-
       score = parseInt(score);
-
       await API.voteProposal(user.id, proposalId, score);
       setAlertVariant('success');
       setAlertMessage("Proposta votata correttamente");
@@ -94,8 +77,9 @@ const Phase2Page = ({ user }) => {
         setAlertMessage(null);
       }, 3000);
     } catch(error) {
-      //console.error("Errore nel registrare il voto:", error);
+      console.error("Errore nel registrare il voto:", error);
       setAlertVariant('danger');
+      
       if (error.response && error.response.data && error.response.data.message) {
         setAlertMessage(`Errore nel registrare il voto: ${error.response.data.message}`);
       } else {
@@ -153,7 +137,7 @@ const Phase2Page = ({ user }) => {
 
     <Row className="justify-content-end mt-3">
         <Col xs="auto">
-          {/* Se l'utente loggato è un admin renderizza il bottone Passa alla fase 2 */}
+          {/* Se l'utente loggato è un admin renderizza il bottone per passare alla fase 3 */}
           {user && user.role === 'Admin' && (
             <Button onClick={handlePassaFase3} className="mt-3" variant="success">
               Fase 3 <i className="bi bi-arrow-right-circle fs-6"></i>

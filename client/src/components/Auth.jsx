@@ -12,31 +12,35 @@ import PropTypes from "prop-types";
  * e gestione degli errori tramite un messaffio di avviso (Alert) 
  */
 function LoginForm(props) {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    
-    const [show, setShow] = useState(false); // Stato per mostrare/nascondere l'Alert di errore
-    const [errorMessage, setErrorMessage] = useState(''); // Messaggio di errore da mostrare
+  //Stati pee username e pwd dell'utente inizializzati con una stringa vuota
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  
+  const [show, setShow] = useState(false); // Stato per mostrare/nascondere l'Alert di errore
+  const [errorMessage, setErrorMessage] = useState(''); // Messaggio di errore da mostrare
 
-    const navigate = useNavigate(); // Hook per navigare alle diverse pagine
+  const navigate = useNavigate(); // Hook per navigare tra le pagine
 
-    const handleSubmit = (event) => {
-      event.preventDefault();
-      const credentials = { username, password };
+  /**
+   * Funzione chiamata quando invio i dati (username e pwd)
+   */
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const credentials = { username, password }; //props
 
-      props.login(credentials)
-        .then(() => {
-          navigate("/"); // Naviga alla home dopo il login riuscito
-        })
-        .catch((err) => {
-          if (err.message === "Unauthorized") {
-            setErrorMessage("Credenziali errate, riprovare"); // Messaggio da mostrare se il login non va a buon fine
-          } else {
-            setErrorMessage(err.message);
-          }
-          setShow(true); // Mostra l'Alert di errore
-        });
-    };
+    props.login(credentials)
+      .then(() => {
+        navigate("/"); // Naviga alla home dopo il login riuscito
+      })
+      .catch((err) => {
+        if (err.message === "Unauthorized") {
+          setErrorMessage("Credenziali errate, riprovare"); // Messaggio da mostrare se il login non va a buon fine
+        } else {
+          setErrorMessage(err.message);
+        }
+        setShow(true); // Mostra l'Alert di errore
+      });
+  };
 
   return (
     <Row className="mt-3 vh-100 justify-content-md-center">

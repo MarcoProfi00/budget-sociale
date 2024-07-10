@@ -9,7 +9,6 @@ import passport from 'passport';
 import LocalStrategy from 'passport-local';
 import session from 'express-session'; //middleware per gestire le sessioni in Express.
 import cors from 'cors';
-import Budget from './components/BudgetSociale.mjs';
 import BudgetSociale from './components/BudgetSociale.mjs';
 
 const proposalDAO = new ProposalDAO();
@@ -17,7 +16,6 @@ const userDAO = new UserDAO();
 
 // init express and set up the middlewares
 const app = new express();
-
 
 app.use(morgan('dev'));
 app.use(express.json());
@@ -67,8 +65,7 @@ app.use(session({
     saveUninitialized: false, // Impedisce di salvare una sessione vuota.
 }));
 //Configura Passport per utilizzare l'autenticazione basata su sessione
-//Questo middleware è responsabile di recuperare l'utente autenticato dalla sessione e rendere disponibile 
-//req.isAuthenticated().
+//Middleware responsabile di recuperare l'utente autenticato dalla sessione e rendere disponibile req.isAuthenticated().
 app.use(passport.authenticate('session'));
 
 /**
@@ -191,8 +188,6 @@ app.put('/api/nextfase', isLoggedIn, async (req, res) => {
     }
   }
 })
-
-
 
 /** Proposal APIs **/
 //FASE 1
@@ -497,9 +492,6 @@ app.delete('/api/proposal/restart', isLoggedIn, async(req, res) => {
     }
   }
 })
-
-
-
 
 // activate the server
 const PORT = 3001;

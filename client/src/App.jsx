@@ -4,12 +4,12 @@ import './App.css';
 import React, { useEffect, useState, useContext } from 'react';
 import { Container } from 'react-bootstrap/';
 import { Route, Routes, Navigate } from 'react-router-dom';
-import { LoginForm } from './components/Auth.jsx';
-import { NotFoundLayout } from './components/PageLayout.jsx';
 import API from "./API.js";
 import FeedbackContext from './contexts/FeedbackContext.js';
 import { PhaseProvider, usePhase } from './contexts/PhaseContext.jsx';
 
+import { LoginForm } from './components/Auth.jsx';
+import { NotFoundLayout } from './components/PageLayout.jsx';
 import Header from "./components/Header.jsx";
 import Phase0Page from './components/Phase0Page';
 import Phase1Page from './components/Phase1Page.jsx';
@@ -26,12 +26,14 @@ import NotLoggedPage from './components/NotLoggedPage.jsx';
 function App() {
   
   const [user, setUser] = useState(null); //Stato per gesire l'utente
-  const [loggedIn, setLoggedIn] = useState(false); //Stato per indicare se l'utente è loggato o meno
-  const { setFeedback, setFeedbackFromError } = useContext(FeedbackContext);
+  const [loggedIn, setLoggedIn] = useState(false); //Stato per indicare se l'utente è loggato
+  const { setFeedback, setFeedbackFromError } = useContext(FeedbackContext); //Stato per i messaggi di feedback
   const { fase, setFase, budget, setBudget } = usePhase(); //Stati ottenuti dal contesto PhaseContext per gestire fase corrente e budget
 
   /**
-   * Effetto per caricare le informazioni dell'utente all'avvio dell'applicazione
+   * UseEffect per caricare le informazioni dell'utente all'avvio dell'applicazione
+   * Viene eseguito ogni volta che loggedIn cambia
+   * Se l'utente è loggato ottengo le informazioni dall'apposita API
    */
   useEffect(() => {
     if (loggedIn) {
@@ -49,7 +51,7 @@ function App() {
 
 
   /**
-   * Funzione che gestisce il login dell'utente'
+   * Funzione che gestisce il login dell'utente
    * @param {*} credentials 
    */
   const handleLogin = async (credentials) => {
@@ -62,7 +64,7 @@ function App() {
       // Dopo il login, ottengo la fase e il budget attraverso API e aggiorno lo stato
       const budgetSociale = await API.getBudgetAndFase();
       setFase(budgetSociale.current_fase); //Imposto la fase nel contesto
-      setBudget(budgetSociale.amount); // Imposto il budget nel contesto
+      setBudget(budgetSociale.amount); //Imposto il budget nel contesto
 
     } catch (error) {
       setLoggedIn(false);
@@ -91,6 +93,7 @@ function App() {
           <Header logout={handleLogout} user={user} loggedIn={loggedIn} />
           <Container fluid className="flex-grow-1 d-flex flex-column">
             <Routes>
+              {/* Se è loggato naviga verso first page altimenti LoginForm */}
               <Route path="/login" element={loggedIn ? <Navigate replace to="/" /> : <LoginForm login={handleLogin} />} />
               <Route path="/setbudget" element={<Phase0Page user={user} />} />
               <Route path="/myproposals" element={<Phase1Page user={user} />} />
@@ -104,14 +107,14 @@ function App() {
               <Route path="*" element={<NotFoundLayout user={user}/>} />
               <Route
                 path="/"
-                element={
+                element={//Controllo se l'utente è loggato, naviga alla pagina in base alla fase
                   loggedIn ? (
                     fase === 1 ? <Navigate replace to="/myproposals" /> :
                     fase === 2 ? <Navigate replace to="/allproposals" /> :
                     fase === 3 ? <Navigate replace to="/approvedproposals" /> :
-                    <Navigate replace to="/setbudget" />
+                    <Navigate replace to="/setbudget" /> //fase 0
                   ) : (
-                    <Navigate replace to="/notlogged" />
+                    <Navigate replace to="/notlogged" /> //Se non è loggato, naviga alla "NotLoggedPage"
                   )
                 }
               />

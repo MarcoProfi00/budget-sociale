@@ -1,11 +1,9 @@
 /**
  * Data Access Object (DAO) module for accessing proposal data
  */
-
 import Proposal, { ProposalWithVote, ProposalsApproved, ProposalsNotApproved, ProposalsWhithSumOfScore } from "../components/Proposal.mjs";
 import db from "../db/db.mjs"
 import { ProposalOverToBudgetError, ProposalsNotFoundError, ProposalAlreadyExistsError, AlreadyThreeProposalsError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError, NotAdminError, BudgetNotExistError } from "../errors/proposalError.mjs";
-
 
 function mapRowsToProposal(rows){
     return rows.map(row => new Proposal(row.id, row.user_id, row.description, row.cost, row.approved))
@@ -28,7 +26,6 @@ function mapRowsToProposalsNotApproved(rows){
 }
 
 export default function ProposalDAO() {
-    
     /**
      * Recupera tutte le proposte create da uno specifico utente
      * @param {*} userId id dell'utente che ha inserito la proposta 
@@ -363,7 +360,6 @@ export default function ProposalDAO() {
                         } else {
                             break
                         }
-                        
                     }
                     sql = "BEGIN TRANSACTION;";
                     for(let i = 0; i < selectedProposals.length; i++){
@@ -379,8 +375,7 @@ export default function ProposalDAO() {
                         }
                     })
                 }
-            })
-             
+            }) 
         })
     }
 

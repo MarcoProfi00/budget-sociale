@@ -1,21 +1,22 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
 import API from '../API';
 
-//Context per la fase
+//Context per la fase e il budget
 const PhaseContext = createContext();
 
 //hook utilizzato per accedere al valore di PhaseContext
 export const usePhase = () => useContext(PhaseContext);
 
 /**
- * Componente che utilizza:
+ * Componente per gestire e inizializzare lo stato dell'applicazione:
  * useState per gestire lo stato della fase
  * useEffect per inizializzarlo utilizzando l'API getPhase al momento del montaggio.
+ * children: prop (componenti figli)
  */
 export const PhaseProvider = ({ children }) => {
   
   const [fase, setFase] = useState(0); //Stato per la fase inizializzato a 0
-  const [budget, setBudget] = useState(null); //Stato per il budget
+  const [budget, setBudget] = useState(null); //Stato per il budget inizializzato a null
   const [error, setError] = useState(null); //Stato per gli errori
 
   /**
@@ -24,11 +25,11 @@ export const PhaseProvider = ({ children }) => {
    */
   const initApp = async (amount) => {
     try {
-      await API.initApp(amount);
-      const budgetSociale = await API.getBudgetAndFase();
+      await API.initApp(amount); //chiamata API per inizializzare l'applicazione
+      const budgetSociale = await API.getBudgetAndFase(); //chiamata API per recuperare il budget e la fase attuali
       setFase(budgetSociale.current_fase); //Imposto la fase
       setBudget(budgetSociale.amount); //Imposto il budget
-      setError(null); //Reset error
+      setError(null); //Imposto eventualmente l'errore
     } catch (error) {
       console.error("Failed to initialize app", error);
       setError("Failed to initialize app");
@@ -40,10 +41,10 @@ export const PhaseProvider = ({ children }) => {
    */
   const getBudgetAndFase = async () => {
     try {
-      const budgetSociale = await API.getBudgetAndFase();
+      const budgetSociale = await API.getBudgetAndFase(); //chiamata API per recuperare il budget e la fase attuali
       setFase(budgetSociale.current_fase); // Imposto la fase
       setBudget(budgetSociale.amount); //Imposto il budget
-      setError(null);
+      setError(null); //Imposto eventualmente l'errore
     } catch (error) {
       console.error('Errore nell\'ottenere la fase:', error);
       setError('Errore nel recuperare il budget e la fase'); 
@@ -55,10 +56,10 @@ export const PhaseProvider = ({ children }) => {
    */
   const avanzareFase = async () => {
     try {
-      await API.nextFase();
-      const budgetSociale = await API.getBudgetAndFase();
+      await API.nextFase(); //chiamata API per avanzare la fase (+1)
+      const budgetSociale = await API.getBudgetAndFase(); //chiamata API per recuperare il budget e la fase attuali
       setFase(budgetSociale.current_fase); //Imposto la fase
-      setError(null); //Reset error
+      setError(null); //Imposto eventualmente l'errore
     } catch (error) {
       console.error('Failed to advance fase:', error);
       setError('Failed to advance fase');
@@ -75,14 +76,14 @@ export const PhaseProvider = ({ children }) => {
   };
 
   /**
-   * UseEffect per inizializzare la fase al montaggio del componente
+   * UseEffect chiama getBudgetAndFase appena il componente viene montato la prima volta
    */
   useEffect(() => {
     getBudgetAndFase();
   }, []);
 
   /**
-   * Modo in cui PhaseContext viene fornito ai componenti figli
+   * Provider con i valori e le funzioni da passare ai componenti figli
    */
   return (
     <PhaseContext.Provider value={{ fase, setFase, avanzareFase, initApp, canAdvanceToNextPhase, getBudgetAndFase, budget, setBudget, error }}>

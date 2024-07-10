@@ -9,14 +9,19 @@ import { PhaseProvider, usePhase } from '../contexts/PhaseContext.jsx';
 import { BiArrowBack } from 'react-icons/bi';
 import API from '../API';
 
+/**
+ * Componente che descrive la tabella delle proposte non approvate
+ * Props in input: user
+ */
 const NotApprovedProposalsPage = ({ user }) => {
 
-    const navigate = useNavigate();
+    const navigate = useNavigate(); //Hook per navigare tra le pagine
     const [notApprovedProposals, setNotApprovedProposals] = useState([]); //Stato per ottenere le proposte non approvate
     const [alertMessage, setAlertMessage] = useState(null); // Stato per gestire i messaggi di alert
 
     /**
-     * UseEffect per ottenere le proposte non approvate dal db
+     * UseEffect per ottenere le proposte non approvate 
+     * Chiama l'API getNotApprovedProposals
      */
     useEffect(() => {
         const fetchNotApprovedProposals = async () => {
@@ -28,8 +33,7 @@ const NotApprovedProposalsPage = ({ user }) => {
                     setNotApprovedProposals([]) //Pulisco le proposte se l'utente non è autenticato
                 }    
             } catch(error) {
-                //console.error('Error fetching not approved proposals:', error);
-                //setAlertMessage('Errore nel recupero delle proposte non approvate');
+                console.error('Error fetching not approved proposals:', error);
             }
         };
 
@@ -57,18 +61,18 @@ const NotApprovedProposalsPage = ({ user }) => {
 
             <Row>
                 <Col>
-                {/* Card bootstrap per il budget e la fase */}
-                    <Card className="card bg-light mb-3" style={{ maxWidth: '100rem', marginTop: '1rem' }}>
+                    {/* Card bootstrap */}
+                    <Card className="card bg-light-red mb-3" style={{ maxWidth: '100rem', marginTop: '1rem' }}>
                         <Card.Header className="text-black">Fase: 3</Card.Header>
                         <Card.Body className="text-black">
-                        <Card.Text> Qui puoi trovare l'elenco delle proposte non approvate</Card.Text>
+                        <Card.Text> <strong>Qui puoi trovare l'elenco delle proposte non approvate </strong></Card.Text>
                         </Card.Body>
                     </Card>
                 </Col>
             </Row>
 
             <Row>
-                <Col as='h2'> Proposte non approvate <i class="bi bi-journal-x"></i></Col>
+                <Col as='h2'> Proposte non approvate <i className="bi bi-journal-x"></i></Col>
             </Row>
 
             <Row>
@@ -81,6 +85,10 @@ const NotApprovedProposalsPage = ({ user }) => {
     )
 }
 
+/**
+ * Componente che descrive la tabella delle proposte non approvate
+ * Props in input: notApprovedProposals (stato)
+ */
 function NotApprovedProposalsTable({ notApprovedProposals }){
     return(
         <Table className="table">

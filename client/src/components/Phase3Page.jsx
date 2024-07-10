@@ -8,37 +8,24 @@ import { Container, Row, Col, Button, Card, Table, Alert, OverlayTrigger, Toolti
 import { PhaseProvider, usePhase } from '../contexts/PhaseContext.jsx';
 import API from '../API';
 
+/**
+ * Componente che gestisce la pagina della fase 3 con l'approvazione delle preferenze
+ * Prop in input: user
+ */
 const Phase3Page = ({ user }) => {
     
-    const { fase, setFase, budget, setBudget, avanzareFase } = usePhase();
-    const [approvedProposals, setApprovedProposals] = useState([]); //Stato per ottenere le proposte approvate
-    const [alertMessage, setAlertMessage] = useState(null); // Stato per gestire i messaggi di alert
-    const navigate = useNavigate();
+    const { setFase, budget, setBudget } = usePhase(); //Stati per gestire fase e budget
+    const [approvedProposals, setApprovedProposals] = useState([]); //Stato per gestire le proposte approvate, inizialmente array vuoto
+    const [alertMessage, setAlertMessage] = useState(null); // Stato per gestire i messaggi di alert, inizialmente null
+    const navigate = useNavigate(); //Hook per gestire la navigazione
 
     const setFeedbackFromError = (error) => {
         setFeedback(error.message);
     };
 
     /**
-    * UseEffect per recuperare fase e budget attuale
-    */
-    useEffect(() => {
-        const fetchData = async () => {
-        try {
-            const budgetSociale = await API.getBudgetAndFase();
-            setFase(budgetSociale.current_fase); // Imposto la fase nel contesto
-            setBudget(budgetSociale.amount); // Imposto il budget nel contesto
-        } catch (error) {
-            //console.error('Error fetching budget and fase:', error);
-            setAlertMessage('Errore nel recupero del budget e della fase');
-        }
-    };
-    
-        fetchData(); // Chiamo la funzione all'avvio del componente
-    }, [setFase, setBudget]);
-
-    /**
-     * Effect per recuperare le proposte approvate
+     * UseEffect per recuperare le proposte approvate
+     * Chiama l'API per recuperare le proposte approvate
      */
     useEffect(() => {
         const fetchApprovedProposals = async () => {
@@ -46,8 +33,7 @@ const Phase3Page = ({ user }) => {
                 const approvedProposals = await API.getApprovedProposals();
                 setApprovedProposals(approvedProposals);
             } catch (error) {
-                //console.error("Error fetching approved proposal", error)
-                setAlertMessage("Errore nel recupero delle proposte approvate")
+                console.error("Error fetching approved proposal", error)
             }
         };
 
@@ -55,8 +41,9 @@ const Phase3Page = ({ user }) => {
     }, [])
 
     /**
-     * Ricomincia da 0 eliminando budget e proposte
-     * Viene richiamato quando premo il pulstante apposito
+     * Funzione chiamata quando premo il tasto per resettare l'applicazione
+     * Ricomincia da 0 eliminando budget, proposte e votazioni
+     * Navigo a Phase0Page (/setBudget) per ricominciare il processo
      */
     const handleRestartProcess = async () => {
         try{
@@ -77,11 +64,11 @@ const Phase3Page = ({ user }) => {
 
             <Row>
                 <Col>
-                {/* Card bootstrap per il budget e la fase */}
-                    <Card className="card bg-light mb-3" style={{ maxWidth: '100rem', marginTop: '1rem' }}>
+                    {/* Card bootstrap per il budget e la fase */}
+                    <Card className="card bg-light-green mb-3" style={{ maxWidth: '100rem', marginTop: '1rem' }}>
                         <Card.Header className="text-black">Fase: 3</Card.Header>
                         <Card.Body className="text-black">
-                        <Card.Text> Qui puoi visualizzare l'elenco delle proposte approvate <br></br>
+                        <Card.Text> <strong>Qui puoi visualizzare l'elenco delle proposte approvate </strong> <br></br>
                         Budget: {budget}</Card.Text>
                         </Card.Body>
                     </Card>
@@ -89,7 +76,7 @@ const Phase3Page = ({ user }) => {
             </Row>
 
             <Row>
-                <Col as='h2'> Proposte Approvate <i class="bi bi-journal-check"></i></Col>
+                <Col as='h2'> Proposte Approvate <i className="bi bi-journal-check"></i></Col>
             </Row>
 
             
@@ -117,7 +104,7 @@ const Phase3Page = ({ user }) => {
                 </OverlayTrigger>
             )}
 
-            {/* Se l'utente loggato è un admin renderizza il bottone Passa alla fase 3 */}
+            {/* Se l'utente loggato è un admin renderizza il bottone per resettare il processo */}
             {user && user.role === 'Admin' && (
                 <Button onClick={handleRestartProcess} variant="warning" className="float-end mt-3">
                     Riavvia il processo
@@ -133,6 +120,10 @@ const Phase3Page = ({ user }) => {
     )
 }
 
+/**
+ * Componente per visualizzare le proposte Approvate
+ * Props in input: approvedProposals
+ */
 function ApprovedProposalsTable({ approvedProposals }){
     return(
         <Table className="table">

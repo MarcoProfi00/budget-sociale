@@ -3,11 +3,16 @@ import { Container, Row, Col, Card, Button, Table, Alert } from 'react-bootstrap
 import { BiArrowBack } from 'react-icons/bi';
 import { useNavigate } from 'react-router-dom';
 import API from '../API';
+import '../App.css';
 
+/**
+ * Componente che gestisce le preferenze espresse da un utente
+ * prop: user
+ */
 const MyPreferences = ({ user }) => {
   const navigate = useNavigate();
-  const [preferences, setPreferences] = useState([]); //Stato per gestire le proposte con le preferenze
-  const [alertMessage, setAlertMessage] = useState(null);
+  const [preferences, setPreferences] = useState([]); //Stato per gestire le proposte con le preferenze, inizialmente array vuoto
+  const [alertMessage, setAlertMessage] = useState(null); //Stato per gestire il messaggio di errore
 
   /**
    * UseEffect che recupera le proposte con le preferenze
@@ -22,8 +27,7 @@ const MyPreferences = ({ user }) => {
           setPreferences([]);
         }
       } catch (error) {
-        //console.error('Error fetching preferences:', error);
-        //setAlertMessage('Errore nel recupero delle preferenze');
+        console.error('Error fetching preferences:', error);
       }
     };
 
@@ -36,7 +40,7 @@ const MyPreferences = ({ user }) => {
    */
   const handleDeletePreference = async (proposalId) => {
     try {
-      await API.deletePreference(user.id, proposalId); // Chiamata all'API per eliminare la preferenza
+      await API.deletePreference(user.id, proposalId); // Chiamo API per eliminare la preferenza
   
       // Aggiorna lo stato delle preferenze rimuovendo quella eliminata
       setPreferences(preferences.filter((preference) => preference.id !== proposalId));
@@ -46,13 +50,20 @@ const MyPreferences = ({ user }) => {
         setAlertMessage(null);
       }, 3000);
     } catch (error) {
-      //console.error("Errore nell'eliminazione della preferenza:", error);
+      console.error("Errore nell'eliminazione della preferenza:", error);
       setAlertMessage("Errore nell'eliminazione della preferenza");
     }
   };
 
   return (
     <Container fluid className="gap-3 align-items-center">
+      {/* Alert */}
+      {alertMessage && (
+        <Alert variant="success" onClose={() => setAlertMessage(null)} dismissible>
+          {alertMessage}
+        </Alert>
+      )}
+
       {/* Freccia indietro per tornare alla pagina precedente */}
       <Button
         variant="link"
@@ -65,7 +76,7 @@ const MyPreferences = ({ user }) => {
 
       <Row>
         <Col>
-          <Card className="card bg-light mb-3" style={{ maxWidth: '100rem', marginTop: '0.5rem' }}>
+          <Card className="card bg-light-yellow mb-3" style={{ maxWidth: '100rem', marginTop: '0.5rem' }}>
             <Card.Header className="text-black">Preferenze espresse</Card.Header>
             <Card.Body className="text-black">
               <Card.Title>Proposte preferite</Card.Title>
@@ -75,12 +86,7 @@ const MyPreferences = ({ user }) => {
         </Col>
       </Row>
 
-      {/* Alert per il feedback */}
-      {alertMessage && (
-        <Alert variant="success" onClose={() => setAlertMessage(null)} dismissible>
-          {alertMessage}
-        </Alert>
-      )}
+      
 
       <Row>
         <Col lg={10} className="mx-auto">
@@ -93,7 +99,8 @@ const MyPreferences = ({ user }) => {
 
 /**
  * Componente tabella delle preferenze
- * @param {*} param0 props in input: preferenze (stato), handleDeletePreference (funzione per eliminare una preferenza)
+ * props in input: proposte con le preferenze espresse (stato),
+ * handleDeletePreference (funzione per eliminare una preferenza)
  */
 function MyPreferenceTable({ preferences, handleDeletePreference }) {
   return (
