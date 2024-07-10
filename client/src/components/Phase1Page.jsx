@@ -20,6 +20,25 @@ const Phase1Page = ({ user }) => {
   const navigate = useNavigate(); //Hook per navigare tra le pagine
 
   /**
+    * UseEffect per recuperare fase e budget attuale
+    */
+    useEffect(() => {
+        const fetchData = async () => {
+        try {
+            const budgetSociale = await API.getBudgetAndFase();
+            setFase(budgetSociale.current_fase); // Imposto la fase nel contesto
+            setBudget(budgetSociale.amount); // Imposto il budget nel contesto
+        } catch (error) {
+            console.error('Error fetching budget and fase:', error);
+            setAlertMessage('Errore nel recupero del budget e della fase');
+        }
+    };
+    
+        fetchData(); // Chiamo la funzione all'avvio del componente
+    }, [setFase, setBudget]);
+    
+
+  /**
    * UseEffect per gestire il recupero delle proposte dato l'user
    * Se l'utente esiste (user) chiamo l'API per ottenere le sue proposte e le imposto,
    * altrimenti imposto lo stato a array vuoto

@@ -18,6 +18,7 @@ const Phase0Page = ({ user }) => {
   const { fase, avanzareFase } = usePhase(); //Stati per la fase presi dela context
   const { setFeedback, setFeedbackFromError } = useContext(FeedbackContext); //Stato per i feedback presi dal context
   const [budget, setBudget] = useState(''); //Stato per il budget inizializzato a stringa vuota
+  const [showBudgetAlert, setShowBudgetAlert] = useState(false);
   
   //Stati per gli alert (messaggi di errore)
   const [showAlert, setShowAlert] = useState(false);
@@ -71,6 +72,14 @@ const Phase0Page = ({ user }) => {
    * Navigo verso myproposals (Phase1Page)
    */
   const handlePassaFase1 = async () => {
+    if(!budget) {
+      setShowBudgetAlert(true);
+      setTimeout(() => {
+        setShowBudgetAlert(false);
+      }, 3000);
+      return;
+    }
+
     try {
       await avanzareFase();
       navigate('/myproposals');
@@ -83,6 +92,11 @@ const Phase0Page = ({ user }) => {
 
   return (
     <Container fluid className="gap-3 align-items-center">
+
+      {/* Alert per avviso budget non impostato */}
+      <Alert variant="danger" show={showBudgetAlert} onClose={() => setShowBudgetAlert(false)} dismissible>
+        È necessario impostare un budget prima di procedere alla fase successiva.
+      </Alert>
       
       {/* Controllo se l'user esiste ed è un admin */}
       {user && user.role === 'Admin' ? (

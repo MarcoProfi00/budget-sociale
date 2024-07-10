@@ -402,7 +402,9 @@
 ## Screenshot
 
 ![Fase1](./Material/Fase1.png)
+![Fase1AddForm](./Material/Fase1AddForm.png)
 ![Fase2](./Material/Fase2.png)
+![Fase2MyPreferences](./Material/Fase2MyPreferences.png)
 
 
 ## Users Credentials
