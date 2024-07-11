@@ -152,7 +152,7 @@ app.post('/api/init', isLoggedIn, [
 })
 
 /**
- * Get del budget della fase
+ * Ritorna il budget e la fase
  * GET /api/budgetandfase
  */
 app.get('/api/budgetandfase', async (req, res) => {
@@ -169,7 +169,7 @@ app.get('/api/budgetandfase', async (req, res) => {
 });
 
 /**
- * Avanza di fase
+ * Avanza di 1 la fase
  * PUT /api/nextfase
  */
 app.put('/api/nextfase', isLoggedIn, async (req, res) => {

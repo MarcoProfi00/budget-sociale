@@ -378,7 +378,7 @@
 
 ## Main React Components
 
-- `Phase0Page`: componente che gestisce la prima pagina dopo la login in base al ruolo dell'utente.
+- `Phase0Page`: componente che gestisce la prima pagina dopo la login prima della fase 0 in base al ruolo dell'utente.
   - Se l'user è admin visualizza un form per inserire il budget e un bottone per avanzare la fase
 - `Phase1Page`: componente che gestisce la pagina contentente le proprie proposte, con la possibilità di aggiungere, modificare o eliminare una proposta.
   - Anche in questo caso se l'user è admin visualizza un bottone per avanzare la fase
