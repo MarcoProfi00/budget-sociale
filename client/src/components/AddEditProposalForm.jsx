@@ -27,25 +27,6 @@ const AddEditProposalForm = ({ proposal, mode, user }) => {
     const formTitle = mode === 'edit' ? 'Modifica Proposta' : 'Aggiungi Nuova Proposta';
 
     /**
-     * UseEffect per recuperare fase e budget attuale
-     */
-    /*useEffect(() => {
-      const fetchData = async () => {
-        try {
-          const budgetSociale = await API.getBudgetAndFase();
-          setFase(budgetSociale.current_fase); // Imposto la fase nel contesto
-          setBudget(budgetSociale.amount); // Imposto il budget nel contesto
-        } catch (error) {
-          console.error('Error fetching budget and fase:', error);
-          setAlertMessage('Errore nel recupero del budget e della fase');
-        }
-      };
-  
-      fetchData(); //Chiamo la funzione all'avvio del componente
-    }, []);
-    */
-
-    /**
      * UseEffect per recuperare i dettagli della proposta
      * Lo uso solo in modalità edit
      */
@@ -78,7 +59,7 @@ const AddEditProposalForm = ({ proposal, mode, user }) => {
             setAlertMessage('Il costo della proposta non può essere superiore del budget.');
             return;
         }
-        //Nuovo oggetto Proposal
+        
         const newProposal = { userId: user.id, description, cost, approved: 0 };
 
         // Controllo se la descrione è un numero (errore)

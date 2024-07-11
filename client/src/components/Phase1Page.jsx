@@ -107,6 +107,13 @@ const Phase1Page = ({ user }) => {
 
       <Row>
         <Col>
+          <h1>Benvenuto/a {user.name}</h1>
+          <h5 style={{ color: 'darkgreen' }}>Definisci, modifica o elimina proposte</h5>
+        </Col>
+      </Row>
+
+      <Row>
+        <Col>
           {/* Card bootstrap per il budget e la fase */}
           <Card className="card bg-light mb-3" style={{ maxWidth: '100rem', marginTop: '1rem' }}>
             <Card.Header className="text-black">Fase: 1</Card.Header>

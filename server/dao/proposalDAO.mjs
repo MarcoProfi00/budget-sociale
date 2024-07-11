@@ -84,8 +84,6 @@ export default function ProposalDAO() {
                 } else {
                     //mi prendo il numero di proposte
                     let number = row.count
-                    //console.log(proposal.user_id)
-                    console.log(number)
                     if(number >= 3) {
                         reject(new AlreadyThreeProposalsError())
                     } else {

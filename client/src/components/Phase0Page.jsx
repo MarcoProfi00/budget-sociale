@@ -103,7 +103,8 @@ const Phase0Page = ({ user }) => {
         <div>
           <Row>
             <Col>
-              <h1>Fase 0</h1>
+              <h1>Benvenuto/a {user.name}</h1>
+              <h5 style={{ color: 'darkgreen' }}>Imposta un budget per iniziare il processo di definizione delle proposte</h5>
             </Col>
           </Row>
           
@@ -141,9 +142,14 @@ const Phase0Page = ({ user }) => {
           </Row>
         </div>
       ) : ( //Se l'user non è Admin
+        
         <Row>
           <Col>
-            
+          <Row>
+            <Col>
+              <h1>Benvenuto/a {user.name}</h1>
+            </Col>
+          </Row>
             <Card className="card bg-light mb-3" style={{ maxWidth: '100rem', marginTop: '1rem' }}>
               <Card.Header className="text-black">Fase: 0</Card.Header>
               <Card.Body className="text-black">

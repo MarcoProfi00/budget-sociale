@@ -57,6 +57,7 @@ const MyPreferences = ({ user }) => {
 
   return (
     <Container fluid className="gap-3 align-items-center">
+      
       {/* Alert */}
       {alertMessage && (
         <Alert variant="success" onClose={() => setAlertMessage(null)} dismissible>
@@ -76,6 +77,7 @@ const MyPreferences = ({ user }) => {
 
       <Row>
         <Col>
+          {/* Card Bootstrap */}
           <Card className="card bg-light-yellow mb-3" style={{ maxWidth: '100rem', marginTop: '0.5rem' }}>
             <Card.Header className="text-black">Preferenze espresse</Card.Header>
             <Card.Body className="text-black">
@@ -85,8 +87,6 @@ const MyPreferences = ({ user }) => {
           </Card>
         </Col>
       </Row>
-
-      
 
       <Row>
         <Col lg={10} className="mx-auto">

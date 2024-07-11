@@ -101,6 +101,13 @@ const Phase2Page = ({ user }) => {
         </Alert>
       )}
 
+    <Row>
+      <Col>
+        <h1>Benvenuto/a {user.name}</h1>
+        <h5 style={{ color: 'darkgreen' }}>Esprimi la tua preferenza per le proposte</h5>
+      </Col>
+    </Row>
+
       <Row>
         <Col>
           {/* Card bootstrap per il budget e la fase */}
@@ -108,8 +115,7 @@ const Phase2Page = ({ user }) => {
             <Card.Header className="text-black">Fase: 2</Card.Header>
             <Card.Body className="text-black">
               <Card.Title>Preferenze Proposte</Card.Title>
-              <Card.Text> Esprimi la tua preferenza per le proposte <br></br>
-              <strong>Attenzione: Puoi esprimere un punteggio da 1 a 3 per ogni preferenza</strong></Card.Text>
+              <Card.Text><strong>Attenzione: Puoi esprimere un punteggio da 1 a 3 per ogni preferenza</strong></Card.Text>
             </Card.Body>
           </Card>
         </Col>

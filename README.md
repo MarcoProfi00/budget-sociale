@@ -17,7 +17,7 @@
 - Route: `/notlogged`: pagina renderizzata quando l'utente non è ancora loggato. 
   - Nelle fasi 0-2 mostrerà un messaggio che spiega che la definizionde delle proposte è ancora in corso. 
   - Nella fase 3 mostrerà l'elenco delle proposte approvate
-- Route `*`: comprende tutte le route diverse da quelle sopra elencate mostra un immagine 404 Not Found e un bottone per navigare alla home (/)
+- Route `*`: comprende tutte le route diverse da quelle sopra elencate mostra un immagine 404 Not Found e un pulsante per navigare alla home (/)
 
 ## API Server
 
@@ -90,7 +90,7 @@
     ...
   ]
   ```
-  - Error responses: `500 Internal Server Error` (generic error), `404 Proposals not found`
+  - Error responses: `500 Internal Server Error` (Generic Error), `404 Proposals not found` (Proposals Not Found), `401 Unauthorized` (User Not Authorized - Not Logged)
 
 - GET `/api/proposals/id/:proposalId`
   - Description: Recupera la proposta in base al suo id
@@ -106,33 +106,30 @@
       "approved": 0
     }
     ```
-  - Error responses: `500 Internal Server Error` (generic error), `404 Proposals not found` (not found error), `401 Unauthorized` (utente non autorizzato - non loggato)
+  - Error responses: `500 Internal Server Error` (Generic Error), `404 Proposals not found` (Proposals Not Found), `401 Unauthorized` (User Not Authorized - Not Logged)
 
 - POST `/api/proposals`
   - Description: Aggiunge una nuova proposta di uno specifico user
-  - Request body: descrizione della proposta da aggiungere
-
+  - Request body: Descrizione della proposta da aggiungere
   ``` json
     {
-      "user_id": 2,
       "description": "Pulizia fondale marino",
       "cost": 450
     }
+  ```    
+  - Response: `200 OK` (success)
+  - Response body: Intera proposta aggiunta
+  
+  ``` json
+  {
+    "id": 7,
+    "userId": 2,
+    "description": "Pulizia fondale marino",
+    "cost": 450,
+    "approved": 0
+  }
   ```
-    
-    - Response: `200 OK` (success)
-    - Response body: Intera proposta aggiunta
-    
-    ``` json
-    {
-      "id": 7,
-      "userId": 2,
-      "description": "Pulizia fondale marino",
-      "cost": 450,
-      "approved": 0
-    }
-  ```
-  - Error responses: `409 Proposal Already Exists` (proposal already exists), `422 Unprocessable Entity` (invalid input), `503 Service Unavailable` (database error), `404 Budget Not Exists` (Budget Not Exist Error), `403 Cost of the proposal greater than the defined budget` (Proposal greather than budget), `401 Unauthorized` (utente non autorizzato - non loggato)
+  - Error responses: `409 Proposal Already Exists` (Proposal Already Exists), `422 Unprocessable Entity` (Invalid Input), `503 Service Unavailable` (Database Error), `404 Budget Not Exists` (Budget Not Exist Error), `403 Cost of the proposal greater than the defined budget` (Proposal Greather Than Budget), `401 Unauthorized` (Another user's proposal),  `403 Cost of the proposal greater than the defined budget`, (Already Three Propoposals)
 
 - PUT `/api/proposals/:id`
   - Description: Modifica la proposta di uno specificato utente
@@ -374,8 +371,8 @@
 
 ## Database Tables
 
-- Table `Users` - contiene gli utenti presenti nel database. Formata da: id, name, surname, role, username(email), password, salt
-- Table `Proposal` - contiene le proposte presenti nel database. Formata da: id, user_id, description, cost, approved
+- Table `Users` - tabella che contiene gli utenti presenti nel database. Formata da: id, name, surname, role, username(email), password, salt
+- Table `Proposal` - tabella che contiene le proposte presenti nel database. Formata da: id, user_id, description, cost, approved
 - Table `Vote` - tabella usata per legare la relazione tra User e Proposal, contiene user_id, proposal_id, che sono chiavi esterne, e l'attributo score che indica il punteggio dato dall'utente
 - Table `BudgetSociale` - tabella che contiene una sola istanza formata da id, amount (budget) e la fase corrente (current_fase)
 
@@ -402,9 +399,7 @@
 ## Screenshot
 
 ![Fase1](./Material/Fase1.png)
-![Fase1AddForm](./Material/Fase1AddForm.png)
 ![Fase2](./Material/Fase2.png)
-![Fase2MyPreferences](./Material/Fase2MyPreferences.png)
 
 
 ## Users Credentials

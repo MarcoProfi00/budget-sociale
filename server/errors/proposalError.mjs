@@ -99,6 +99,3 @@ export class AlreadyThreeProposalsError extends Error{
         this.code = 403;
     }
 }
-
-
-
