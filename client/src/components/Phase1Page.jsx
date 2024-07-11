@@ -107,7 +107,7 @@ const Phase1Page = ({ user }) => {
 
       <Row>
         <Col>
-          <h1>Benvenuto/a {user.name}</h1>
+          {user && <h1>Benvenuto/a {user.name}</h1>}
           <h5 style={{ color: 'darkgreen' }}>Definisci, modifica o elimina proposte</h5>
         </Col>
       </Row>

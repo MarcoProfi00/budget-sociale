@@ -103,7 +103,7 @@ const Phase2Page = ({ user }) => {
 
     <Row>
       <Col>
-        <h1>Benvenuto/a {user.name}</h1>
+        {user && <h1>Benvenuto/a {user.name}</h1>}
         <h5 style={{ color: 'darkgreen' }}>Esprimi la tua preferenza per le proposte</h5>
       </Col>
     </Row>
