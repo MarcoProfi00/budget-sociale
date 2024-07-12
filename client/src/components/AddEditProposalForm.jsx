@@ -92,7 +92,7 @@ const AddEditProposalForm = ({ proposal, mode, user }) => {
           setTimeout(() => {
             setAlertMessage(null);
             navigate('/myproposals'); // Naviga alla pagina delle proprie proposte dopo 3 sec
-          }, 3000);
+          }, 1000);
         } catch (error) {
           console.error('Error:', error);
           setAlertMessage('Si è verificato un errore durante l\'operazione.');

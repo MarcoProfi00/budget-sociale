@@ -1,15 +1,17 @@
+/**
+ * Gestisce gli errori delle proposte
+ */
 const PROPOSALS_NOT_FOUND = "Proposals not found"
 const PROPOSALS_ALREADY_EXISTS = "Proposal already exists"
 const UNAUTHORIZED_USER = "Another user's proposal"
 const UNAUTHORIZED_USER_VOTE = "You cannot vote your proposal"
 const VOTE_NOT_FOUND = "User has not voted on any proposal"
 const NOT_ADMIN = "Only the admin can do the reset"
-const NOT_ADMIN_BUDGET = "Only the admin can insert the budget or next phase"
+const NOT_ADMIN_BUDGET = "Only the admin can insert the budget or phase"
 const BUDGET_NOT_EXIST = "Budget not found"
 const FASE_ERROR = "The phase not allowed"
 const PROPOSAL_OVER_TO_BUDGET = "Cost of the proposal greater than the defined budget"
 const ALREADY_THREE_PROPOSALS_ERROR = "User has already 3 proposals";
-
 
 
 export class ProposalsNotFoundError extends Error{

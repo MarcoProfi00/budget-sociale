@@ -34,11 +34,11 @@
   - Response body: 
   ``` json
   {
-    "id": 1,
-    "username": "francesca.bianchi@gmail.com",
+    "id": 2,
     "name": "Francesca",
     "surname": "Bianchi",
-    "token": "some-auth-token"
+    "role": "Member",
+    "username": "francesca.bianchi@gmail.com"
   }
   ```
   - Error responses: `401 Unauthorized` (invalid credentials), `422 Unprocessable Entity` (missing or invalid input), `503 Service Unavailable` (database error)
@@ -51,13 +51,14 @@
   ``` json
   {
     "id": 1,
-    "username": "francesca.bianchi@gmail.com",
+    
     "name": "Francesca",
     "surname": "Bianchi",
-    "token": "some-auth-token"
+    "role": "Member",
+    "username": "francesca.bianchi@gmail.com",
   }
   ```
-   - Error responses: `401 Unauthorized` (invalid credentials), `503 Service Unavailable` (database error)
+   - Error responses: `401 Unauthorized` (Unauthorized user - Not Logged), `503 Service Unavailable` (database error)
 
 - DELETE `/api/sessions/current`
   - Description: Esegue il logout dell'utente corrente, terminando la sessione
@@ -90,7 +91,7 @@
     ...
   ]
   ```
-  - Error responses: `500 Internal Server Error` (Generic Error), `404 Proposals not found` (Proposals Not Found), `401 Unauthorized` (User Not Authorized - Not Logged)
+  - Error responses: `500 Internal Server Error` (Generic Error), `404 Proposals not found` (Proposals Not Found), `401 Unauthorized` (Unauthorized user - Not Logged)
 
 - GET `/api/proposals/id/:proposalId`
   - Description: Recupera la proposta in base al suo id
@@ -106,7 +107,7 @@
       "approved": 0
     }
     ```
-  - Error responses: `500 Internal Server Error` (Generic Error), `404 Proposals not found` (Proposals Not Found), `401 Unauthorized` (User Not Authorized - Not Logged)
+  - Error responses: `500 Internal Server Error` (Generic Error), `404 Proposals not found` (Proposals Not Found), `401 Unauthorized` (Unauthorized user - Not Logged)
 
 - POST `/api/proposals`
   - Description: Aggiunge una nuova proposta di uno specifico user
@@ -122,21 +123,21 @@
   
   ``` json
   {
-    "id": 7,
-    "userId": 2,
+    "id": 1,
+    "userId": 1,
     "description": "Pulizia fondale marino",
     "cost": 450,
     "approved": 0
   }
   ```
-  - Error responses: `409 Proposal Already Exists` (Proposal Already Exists), `422 Unprocessable Entity` (Invalid Input), `503 Service Unavailable` (Database Error), `404 Budget Not Exists` (Budget Not Exist Error), `403 Cost of the proposal greater than the defined budget` (Proposal Greather Than Budget), `401 Unauthorized` (Another user's proposal),  `403 Cost of the proposal greater than the defined budget`, (Already Three Propoposals)
+  - Error responses: `409 Proposal Already Exists` (Proposal Already Exists), `422 Unprocessable Entity` (Invalid Input), `503 Service Unavailable` (Database Error), `404 Budget Not Exists` (Budget Not Exist Error), `403 Cost of the proposal greater than the defined budget` (Proposal Greather Than Budget), `401 Unauthorized` (Another user's proposal) - (Unauthorized user - Not Logged),  `403 User has already 3 proposals`, (Already Three Propoposals)
 
 - PUT `/api/proposals/:id`
   - Description: Modifica la proposta di uno specificato utente
   - Request body: descrizione della proposta da modificare
   ``` json
   {
-    "description": "Acquisto di nuovi libri per la biblioteca comunale",
+    "description": "Acquisto nuovi libri per la biblioteca1",
     "cost": 300
   }
   ```
@@ -145,28 +146,27 @@
   
   ``` json
   {
-    "id": "1",
+    "id": 2,
     "userId": 2,
-    "description": "Acquisto di nuovi libri per la biblioteca comunale",
+    "description": "Acquisto nuovi libri per la biblioteca1",
     "cost": 300,
     "approved": 0
   }
   ```
-  - Error responses: `403 Another user's proposal` (proposal of another user), `422 Unprocessable Entity` (invalid input), `503 Service Unavailable` (database error), `401 Unauthorized` (utente non autorizzato - non loggato)
+  - Error responses: `403 Another user's proposal` (proposal of another user), `422 Unprocessable Entity` (invalid input), `503 Service Unavailable` (database error), `404 Proposals not found` (Proposals Not Found), `401 Unauthorized` (Unauthorized user - Not Logged)
 
 - DELETE `/api/proposals/:id`
   - Description: Elimina la proposta di un determinato utente
   - Request body: _None_
   - Response: `200 OK` (success)
   - Response body: _None_
-  - Error responses:  `401 Unauthorized` (utente non autorizzato - non loggato), `403 Another user's proposal` (proposal of another user), `503 Service Unavailable` (database error)
+  - Error responses:  `401 Unauthorized` (Unauthorized user - Not Logged), `403 Another user's proposal` (proposal of another user), `503 Service Unavailable` (database error)
 
 - GET `/api/proposals`
   - Description: Recupera tutte le proposte presenti nel db
   - Request body: _None_
   - Response: `200 OK` (success)
   - Response body: Array di proposte
-
   ``` json
   [
     {
@@ -186,10 +186,10 @@
     ...
   ]
   ```
-  - Error responses: `500 Internal Server Error` (generic error), `404 Proposals not found`, `401 Unauthorized` (utente non autorizzato - non loggato)
+  - Error responses: `500 Internal Server Error` (generic error), `404 Proposals not found`, `401 Unauthorized` (Unauthorized user - Not Logged)
 
 - POST `/api/proposals/:id/vote`
-  - Description: Vota la proposta non propria inserendo una riga nella tabella Vote
+  - Description: Vota una determinata proposta inserendo una riga nella tabella Vote
   - Request body: 
   ``` json
   {
@@ -198,14 +198,13 @@
   ```
   - Response: `200 OK` (success)
   - Response body: score appena aggiunto
-  - Error responses: `500 Internal Server Error` (generic error), `403 You cannot vote your proposal`
+  - Error responses: `503 Service Unavailable` (database error), `403 You cannot vote your proposal` (Unauthorized User), `422 Unprocessable Entity` (Score different from 1, 2 or 3), `401 Unauthorized` (Unauthorized user - Not Logged)
 
 - GET `/api/proposals/voted/:id`
   - Description: Recupera tutte le proposte votate da uno specifico utente
   - Request body: _None_
   - Response: `200 OK` (success)
   - Response body: Array di proposte
-
   ``` json
   [
     {
@@ -222,14 +221,14 @@
     }
   ]
   ```
- - Error responses: `500 Internal Server Error` (generic error), `404 User has not voted on any proposal`, `401 Unauthorized` (utente non autorizzato - non loggato)
+ - Error responses: `500 Internal Server Error` (generic error), `404 User has not voted on any proposal` (Vote Not Found), `401 Unauthorized` (Unauthorized user - Not Logged)
 
 - DELETE `/api/proposals/voted/delete/:id`
   - Description: Elimina la preferenza espressa precedentemente da un determinato utente
   - Request body: _None_
   - Response: `200 OK` (success)
   - Response body: _None_
-  - Error responses:  `401 Unauthorized` (utente non autorizzato - non loggato), `403 Another user's proposal` (proposal of another user), `503 Service Unavailable` (database error)
+  - Error responses:  `401 Unauthorized` (Unauthorized user - Not Logged), `403 Another user's proposal` (Proposal of another user), `503 Service Unavailable` (database error)
 
 - GET `/api/proposal/ordered`
   - Description: Ordina le proposte presenti nel database in base al total_score (somma degli score della stessa proposa) in ordine decrescente
@@ -257,19 +256,14 @@
     ...
   ]
   ```
-  - Error responses: `401 Unauthorized` (utente non autorizzato - non loggato), `500 Internal Server Error` (generic error), `404 Proposals not found`
+  - Error responses: `401 Unauthorized` (Unauthorized user - Not Logged), `500 Internal Server Error` (Generic Error), `404 Proposals not found` (No proposals in the db)
 
 - PUT `/api/proposal/approve`
   - Description: Approva le proposte che rientrano nel budget
-  - Request body: budget 
-  ``` json
-    {
-      "budget": 3000
-    }
-  ```
+  - Request body: _None_
   - Response: `200 OK` (success)
   - Response body: true
-  - Error responses: `500 Internal Server Error` (generic error)
+  - Error responses: `503 Service Unavailable` (database error), `401 Unauthorized` (Unauthorized user - Not Logged)
 
 - GET `/api/proposal/approved`
   - Description: Recupera le proposte approvate presenti nel database in base al total_score (somma degli score della stessa proposa) in ordine decrescente
@@ -358,14 +352,14 @@
     "current_fase": 0
   }
   ```
-  - Error responses: `401 Unauthorized` (utente non autorizzato - non loggato), `503 Service Unavailable` (database error), `404 Budget not found` (budget not exist)
+  - Error responses: `503 Service Unavailable` (database error)
 
 - PUT `/api/nextfase`
   - Description: Avanza di uno la fase
   - Request body: _None_
   - Response: `200 OK` (success)
   - Response body: true
-  - Error responses: `401 Unauthorized` (utente non autorizzato - non loggato), `503 Service Unavailable` (database error), `403 Only the admin can insert the budget or next phase` (not admin error budget), `404 Budget not found` (budget not exist), `403 The phase not allowed` (Fase error)
+  - Error responses: `401 Unauthorized` (utente non autorizzato - non loggato), `503 Service Unavailable` (database error), `403 Only the admin can insert the budget or phase` (not admin error budget), `404 Budget not found` (budget not exist), `403 The phase not allowed` (Fase error)
 
 
 

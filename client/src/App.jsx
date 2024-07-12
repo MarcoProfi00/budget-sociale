@@ -114,6 +114,7 @@ function App() {
                     fase === 3 ? <Navigate replace to="/approvedproposals" /> :
                     <Navigate replace to="/setbudget" /> //fase 0
                   ) : (
+                    fase === 3 ? <Navigate replace to="/approvedproposals" /> :
                     <Navigate replace to="/notlogged" /> //Se non è loggato, naviga alla "NotLoggedPage"
                   )
                 }

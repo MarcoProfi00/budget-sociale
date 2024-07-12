@@ -6,7 +6,6 @@ const SERVER_URL = 'http://localhost:3001/api';
 
 /**
  * Esegue la login
- * Vuole username e password dentro all'oggetto "credentials"
  */
 const logIn = async (credentials) => {
     return await fetch(SERVER_URL + '/sessions', {
@@ -14,9 +13,8 @@ const logIn = async (credentials) => {
         headers: {
             'Content-Type': 'application/json',
         },
-        //questo parametro specifica che il cookie di autenticazione deve essere inoltrato. È incluso in tutte le API autenticate.
-        credentials: 'include',
-        body: JSON.stringify(credentials),
+        credentials: 'include', //inoltro cookie di autenticazione 
+        body: JSON.stringify(credentials), //converto l'oggetto in JSON
     }).then(handleInvalidResponse)
     .then(response => response.json());
 };
@@ -32,8 +30,8 @@ const getUserInfo = async () => {
     .then(handleInvalidResponse)
     .then(response => response.json())
     .then(data => {
-        setUserRole(data.role); // Imposta il ruolo dell'utente nello stato
-        return data; // Restituisci tutti i dati dell'utente, se necessario
+        setUserRole(data.role);
+        return data;
     });
 };
 
@@ -275,7 +273,11 @@ async function restartProcess(userId) {
 }
 
 /**
- * Gesisce le risposte ottenute dalle chiamate fetch
+ * Verifica la validità delle risposte HTTP e si assicura che sia un oggetto json
+ *  Controlla se la risposta ha uno status di successo
+ *  Recupera l'header Content-Type della risposta
+ *  Controlla se il tipo di contenuto è JSON
+ *  Se il controllo va a buon fine restituisce la risposta
  */
 function handleInvalidResponse(response) {
     if (!response.ok) { throw Error(response.statusText) }

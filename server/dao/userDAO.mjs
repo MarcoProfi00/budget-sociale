@@ -1,12 +1,11 @@
 /**
  * Data Access Object (DAO) module for accessing user data
  */
+
 import db from "../db/db.mjs"
 import crypto from 'crypto';
 import { UserNotFoundError } from "../errors/userError.mjs";
-import { rejects } from "assert";
 import { NotAdminError, NotAdminErrorBudget, FaseError, BudgetNotExistError } from "../errors/proposalError.mjs";
-import Budget from "../components/BudgetSociale.mjs";
 import BudgetSociale from "../components/BudgetSociale.mjs";
 
 export default function UserDAO() {
@@ -31,6 +30,14 @@ export default function UserDAO() {
         })
     }
 
+    /**
+     * Recupera l'utente date username e password
+     * Viene criptata la password con un sale a 64 bit
+     * Si controlla se l'hash crittografico è uguale a quello slavato nel db, se è uguale si risolve con true, altrimenti con false
+     * @param {*} username email dell'utente
+     * @param {*} password plain-text password
+     * @returns La promise si risolve con true se viene trovato l'utente
+     */
     this.getUserByCredentials = (username, password) => {
         return new Promise((resolve, reject) => {
             let sql = "SELECT * FROM User WHERE username = ?";
@@ -44,11 +51,10 @@ export default function UserDAO() {
                     crypto.scrypt(password, row.salt, 64, function(err, hashedPassword) {
                         if(err)
                             reject(err)
-                        //controlliamo se hash crittografico è uguale a quello slavato nel db
-                        if (!crypto.timingSafeEqual(Buffer.from(row.password, 'hex'), hashedPassword)) // WARN: it is hash and not password (as in the week example) in the DB
-                            resolve(false); //se non è uguale resolve con false
+                        if (!crypto.timingSafeEqual(Buffer.from(row.password, 'hex'), hashedPassword))
+                            resolve(false);
                         else
-                            resolve(user); //se è uguale resolve con true
+                            resolve(user);
                     });
                 }
             })
@@ -56,7 +62,7 @@ export default function UserDAO() {
     }
 
     /**
-     * Inizializza Budget e Fase corrente
+     * Inizializza Budget e Fase 0
      * @param {*} userId id dell'utente che li inserisce (admin)
      * @param {*} budget oggetto budget da aggiungere
      * @returns La promise si risolve ritornando l'oggetto BudgetSociale
@@ -86,7 +92,8 @@ export default function UserDAO() {
 
     /**
      * Recupera budget e fase
-     * @returns La promise si risolve ritornando l'oggetto budget
+     * @returns Se non esiste la riga nel db la promise si risolve ritornando un oggetto di tipo BudgetSociale vuoto
+     * Altrimenti la promise si risolve ritornando l'oggetto BudgetSociale trovato
      */
     this.getBudgetAndFase = () => {
         return new Promise((resolve, reject) => {
@@ -95,11 +102,8 @@ export default function UserDAO() {
                 if(err) {
                     reject(err)
                 } else if (!row){
-                    //budgetSociale vuoto (inizializzato tutto a 0)
                     const budgetSociale = new BudgetSociale(undefined, 0, 0)
-                    //risolvo con il budgetsociale vuoto
                     resolve(budgetSociale)
-                    //reject(new BudgetNotExistError())
                 } else {
                     const budget = new BudgetSociale(row.id, row.amount, row.current_fase)
                     resolve(budget)
@@ -129,7 +133,7 @@ export default function UserDAO() {
                         } else if (!row) {
                             reject(new BudgetNotExistError())
                         } else {
-                            const current_fase = Number(row.current_fase) //mi prendo la fase corrente
+                            const current_fase = Number(row.current_fase)
                             let nextFase = current_fase + 1;
                             let id = row.id;
                             if(nextFase > 3) {
@@ -153,27 +157,25 @@ export default function UserDAO() {
 
     /**
      * Elimina le proposte, le votazioni e il budget (restart the process)
+     * Viene controllato se l'user è un Admin, se non lo è la promise viene rigettata con un errore
+     * Viene svuotata prima la tabella Vote, in modo da eliminare i vincoli di chiave esterna e poi successivamente Proposal e BudgetSociale
      * @param {*} userId id dell'utente che effettua il restart (deve essere admin)
      * @returns La promise si risolve ritornando true se l'eliminazione delle righe è andato a buon fine
      */
     this.restartProcess = (userId) => {
         return new Promise((resolve, reject) => {
-            //query per verificare che l'utente è l'admin
             let sql = `SELECT * FROM User WHERE user.id = ? AND User.role = 'Admin'`;
             db.get(sql, [userId], (err, row) => {
                 if(err){
                     reject(err);
-                    //se la riga è vuota vuol dire che non è un admin
                 } else if(!row){
                     reject(new NotAdminError())
                 } else {
-                    //query per svuotare la tabella Vote
                     sql = "DELETE FROM Vote;";
                     db.run(sql, function(err) {
                         if(err){
                             reject(err)
                         } else {
-                            //query per svuotare la tabella Proposal
                             sql = "DELETE FROM Proposal;";
                             db.run(sql, function(err) {
                                 if(err){

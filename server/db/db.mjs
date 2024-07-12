@@ -1,4 +1,7 @@
-/** DB access module **/
+/**
+ * DB access module
+ */
+
 import sqlite3 from "sqlite3";
 
 const database_path = './db/'

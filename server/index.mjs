@@ -11,6 +11,7 @@ import session from 'express-session'; //middleware per gestire le sessioni in E
 import cors from 'cors';
 import BudgetSociale from './components/BudgetSociale.mjs';
 
+//istanze dei DAO
 const proposalDAO = new ProposalDAO();
 const userDAO = new UserDAO();
 
@@ -28,6 +29,7 @@ const corsOptions = {
 app.use(cors(corsOptions))
 
 /** Passport **/
+
 /**
  * Funzione per trovare user con credenziali fornite
  * Se non viene trovato alcun utente, la funzione ritorna un callback con false e un messaggio di errore.
@@ -57,15 +59,15 @@ passport.deserializeUser(function (user, callback) {
   return callback(null, user); // this will be available in req.user
 });
 
-/** Creating the session */
-
+/**
+ * Creazione della sessione
+ */
 app.use(session({
     secret: "This is a very secret information used to initialize the session!",
     resave: false, //Impedisce di salvare la sessione se non ci sono state modifiche.
     saveUninitialized: false, // Impedisce di salvare una sessione vuota.
 }));
-//Configura Passport per utilizzare l'autenticazione basata su sessione
-//Middleware responsabile di recuperare l'utente autenticato dalla sessione e rendere disponibile req.isAuthenticated().
+
 app.use(passport.authenticate('session'));
 
 /**
@@ -125,7 +127,7 @@ app.delete('/api/sessions/current', (req, res) => {
 });
 
 /**
- * Inizializza creando un nuovo budget e impostando la fase a 0, fornendo le informazioni necessarie
+ * Inizializza l'applicazione creando un nuovo budget e impostando la fase a 0, fornendo le informazioni necessarie
  * POST /api/init
  */
 app.post('/api/init', isLoggedIn, [
@@ -152,7 +154,7 @@ app.post('/api/init', isLoggedIn, [
 })
 
 /**
- * Ritorna il budget e la fase
+ * Recupera il budget e la fase
  * GET /api/budgetandfase
  */
 app.get('/api/budgetandfase', async (req, res) => {
@@ -190,7 +192,7 @@ app.put('/api/nextfase', isLoggedIn, async (req, res) => {
 })
 
 /** Proposal APIs **/
-//FASE 1
+/** FASE 1 **/
 
 /**
  * Get di tutte le proposta di un utente dato il suo id
@@ -310,7 +312,7 @@ app.delete('/api/proposals/:id', isLoggedIn, async(req, res) => {
   }
 })
 
-//Fase 2
+/** FASE 2 **/
 /**
  * Get di tutte le proposte presenti nel db
  * GET /api/proposals
@@ -382,7 +384,6 @@ app.get('/api/proposals/voted/:id', isLoggedIn, async (req, res) => {
   }
 });
 
-
 /**
  * Rimuove lo score di una proposta precedentemente votata da un utente
  * DELETE api/proposals/voted/:id
@@ -400,6 +401,7 @@ app.delete('/api/proposals/voted/delete/:id', isLoggedIn, async(req, res) => {
   }
 });
 
+/** FASE 3 **/
 /**
  * Ordina le proposte in base al total_score in ordine decrescente (API intermedia per l'approvazione)
  * GET /api/proposal/ordered
@@ -480,6 +482,10 @@ app.get('/api/proposal/notApproved', isLoggedIn, async (req, res) => {
   }
 })
 
+/**
+ * Ricomincia il processo eliminando le tuple nelle tabelle Vote, Proposal e BudgetSociale
+ * DELETE /api/proposal/restart
+ */
 app.delete('/api/proposal/restart', isLoggedIn, async(req, res) => {
   try{
     await userDAO.restartProcess(req.user.id);
@@ -493,6 +499,6 @@ app.delete('/api/proposal/restart', isLoggedIn, async(req, res) => {
   }
 })
 
-// activate the server
+// Attivazione del server
 const PORT = 3001;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}/`));

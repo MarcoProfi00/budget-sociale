@@ -1,6 +1,7 @@
 /**
  * Data Access Object (DAO) module for accessing proposal data
  */
+
 import Proposal, { ProposalWithVote, ProposalsApproved, ProposalsNotApproved, ProposalsWhithSumOfScore } from "../components/Proposal.mjs";
 import db from "../db/db.mjs"
 import { ProposalOverToBudgetError, ProposalsNotFoundError, ProposalAlreadyExistsError, AlreadyThreeProposalsError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError, NotAdminError, BudgetNotExistError } from "../errors/proposalError.mjs";
@@ -28,7 +29,7 @@ function mapRowsToProposalsNotApproved(rows){
 export default function ProposalDAO() {
     /**
      * Recupera tutte le proposte create da uno specifico utente
-     * @param {*} userId id dell'utente che ha inserito la proposta 
+     * @param {*} userId id dell'utente autore delle proposte
      * @returns La promise si risolve in un array di proposte
      */
     this.getProposalById = (userId) => {
@@ -82,7 +83,7 @@ export default function ProposalDAO() {
                 if(err) {
                     reject(err);
                 } else {
-                    //mi prendo il numero di proposte
+                    //numero di proposte
                     let number = row.count
                     if(number >= 3) {
                         reject(new AlreadyThreeProposalsError())
@@ -212,15 +213,13 @@ export default function ProposalDAO() {
      * @param {*} score score 1 - 2 - 3
      * @returns La promise si risolve ritornando lo score se la votazione va a buon fine
      */
-    this.voteProposal = (userId, id, score) => { //userId -> utente che la chiama
+    this.voteProposal = (userId, id, score) => {
         return new Promise((resolve, reject) => {
-            //controllo se la proposta è la propria
             let sql = "SELECT * FROM Proposal WHERE id = ? AND user_id = ?";
             db.get(sql, [id, userId], (err, row) => {
                 if(err) {
                     reject(err);
                 } else if(!row){
-                    //se non trova la riga vuol dire che la proposta non è la propria e quindi si può votare
                     sql = "INSERT INTO Vote (user_id, proposal_id, score) VALUES (?, ?, ?)";
                     db.run(sql, [userId, id, score], function (err){
                         if(err){
@@ -243,7 +242,6 @@ export default function ProposalDAO() {
      */
     this.getOwnPreference = (userId) => {
         return new Promise((resolve, reject) => {
-            // Query che ritorna la lista di proposal votate da un utente (userId)
             let sql = `SELECT Proposal.id, Proposal.description, Proposal.cost, Vote.score 
                        FROM Proposal, Vote 
                        WHERE Proposal.id = Vote.proposal_id AND Vote.user_id = ?;`;
@@ -262,22 +260,21 @@ export default function ProposalDAO() {
 
     /**
      * Elimina la preferenza a una proposta precedentemente espressa
+     * Si controlla prima se l'user ha votato una determinata proposta.
+     * Se il controllo non va a buon fine (!row) la promise si rigetta con un errore
      * @param {*} userId id dell'utente che ha espesso la preferenza e vuole eliminarla
      * @param {*} proposalId id della proposta
      * @returns La promise si risolve eliminando la proposta e ritornando il numero di cambiamenti
      */
     this.deleteOwnPreference = (userId, proposalId) => {
         return new Promise((resolve, reject) => {
-            //query per verificare se è possibile eliminare lo score della proposta
             let sql = "SELECT * FROM Vote WHERE user_id = ? AND proposal_id = ?";
             db.get(sql, [userId, proposalId], (err, row) => {
                 if(err) {
                     reject(err);
-                    //se la riga è vuota vuol dire che non è possibile eliminare lo score di quella proposta perchè non è stata votata dallo user 
                 } else if(!row){
                     reject(new UnauthorizedUserError())
                 } else {
-                    //query per eliminare la riga della votazione
                     sql = "DELETE FROM Vote WHERE user_id = ? AND proposal_id = ?";
                     db.run(sql, [userId, proposalId], function (err) {
                         if(err){
@@ -292,8 +289,9 @@ export default function ProposalDAO() {
     }
 
     /**
-     * Recupera le proposte in ordine decrescente di total_score (score uguali vengono sommati)
-     * @returns La promise si risolve ritornando l'array delle proposte
+     * Recupera le proposte in ordine decrescente di total_score (gli score uguali vengono sommati)
+     * @returns La promise si risolve ritornando l'array delle proposte.
+     * Se l'array è vuoto la promise si rigetta con un errore
      */
     this.getProposalsOrderedToScore = () => {
         return new Promise((resolve, reject) => {
@@ -330,16 +328,17 @@ export default function ProposalDAO() {
 
     /**
      * Approva le proposte in base al budget
-     * Richiama la promise "getProposalsOrderedToScore" in await per ordinare le proposte secondo il total_score in ordine decrescente
-     * Crea una transazione in cui in un ciclo for in cui viene aggiornato il campo approved delle proposte che rientrano nel budget
-     * @param {*} budget budget da rispettare
+     *  Recupera il budget dalla tabella BudgetSociale
+     *  Richiama la promise "getProposalsOrderedToScore" in await per ordinare le proposte secondo il total_score in ordine decrescente
+     *  Crea una transaction dove in un ciclo for viene aggiornato il campo approved delle proposte che rientrano nel budget
+     *  Se avviene un errore durante l'aggiornamento, la transazione viene annullata con un rollback
      * @returns La promise si risolve ritornando true se l'approvazione va a buon fine
      */
     this.approveProposals = () => {
         return new Promise(async (resolve, reject) => {
             let totalCost = 0;
             const selectedProposals = [];
-            //richiamo la promise precedente per ottenere l'array di proposte ordinate in base allo score totale
+
             const proposals = await this.getProposalsOrderedToScore();
             
             let sql = "SELECT * FROM BudgetSociale";
@@ -361,13 +360,12 @@ export default function ProposalDAO() {
                     }
                     sql = "BEGIN TRANSACTION;";
                     for(let i = 0; i < selectedProposals.length; i++){
-                        //query per aggiornare il campo approved delle proposte all'interno del budget
                         sql += `UPDATE Proposal SET approved = 1 WHERE id = '${selectedProposals[i].id}';`
                     }
                     sql += "COMMIT;";
                     db.exec(sql, function(err) {
                         if(err){
-                            reject(err)
+                            db.exec("ROLLBACK;", () => reject(err)); //annullo la transazione con un ROLLBACK
                         } else {
                             resolve(true)
                         }
