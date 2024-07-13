@@ -28,7 +28,7 @@ function App() {
   const [user, setUser] = useState(null); //Stato per gesire l'utente
   const [loggedIn, setLoggedIn] = useState(false); //Stato per indicare se l'utente è loggato
   const { setFeedback, setFeedbackFromError } = useContext(FeedbackContext); //Stato per i messaggi di feedback
-  const { fase, setFase, budget, setBudget } = usePhase(); //Stati ottenuti dal contesto PhaseContext per gestire fase corrente e budget
+  const { fase, setFase, budget, setBudget, getBudgetAndFase } = usePhase(); //Stati ottenuti dal contesto PhaseContext per gestire fase corrente e budget
 
   /**
    * UseEffect per caricare le informazioni dell'utente all'avvio dell'applicazione
@@ -52,6 +52,8 @@ function App() {
 
   /**
    * Funzione che gestisce il login dell'utente
+   * Chiama API del login per ottenere le informazioni dell'utente
+   * Chiama la funzione getBudgetAndFase del contesto PhaseContext per ottenere la fase e il budget attuali
    * @param {*} credentials 
    */
   const handleLogin = async (credentials) => {
@@ -61,10 +63,7 @@ function App() {
       setLoggedIn(true);
       setFeedback(`Welcome, ${user.name}`);
 
-      // Dopo il login, ottengo la fase e il budget attraverso API e aggiorno lo stato
-      const budgetSociale = await API.getBudgetAndFase();
-      setFase(budgetSociale.current_fase); //Imposto la fase corrente
-      setBudget(budgetSociale.amount); //Imposto il budget corrente
+     await getBudgetAndFase();
 
     } catch (error) {
       setLoggedIn(false);

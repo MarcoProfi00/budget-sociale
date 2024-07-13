@@ -4,7 +4,7 @@
 
 import Proposal, { ProposalWithVote, ProposalsApproved, ProposalsNotApproved, ProposalsWhithSumOfScore } from "../components/Proposal.mjs";
 import db from "../db/db.mjs"
-import { ProposalOverToBudgetError, ProposalsNotFoundError, ProposalAlreadyExistsError, AlreadyThreeProposalsError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError, WrongFaseError, BudgetNotExistError } from "../errors/proposalError.mjs";
+import { ProposalOverToBudgetError, ProposalsNotFoundError, ProposalAlreadyExistsError, VoteSameProposalError, AlreadyThreeProposalsError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError, WrongFaseError, BudgetNotExistError } from "../errors/proposalError.mjs";
 
 function mapRowsToProposal(rows){
     return rows.map(row => new Proposal(row.id, row.user_id, row.description, row.cost, row.approved))
@@ -259,11 +259,13 @@ export default function ProposalDAO() {
                     if(fase !== 2) {
                         reject(new WrongFaseError())
                     } else {
-                        sql = "SELECT * FROM Proposal WHERE id = ? AND user_id = ?";
+                        sql = "SELECT * FROM Vote WHERE proposal_id = ? AND user_id = ?";
                         db.get(sql, [id, userId], (err, row) => {
                             if(err) {
                                 reject(err);
-                            } else if(!row){
+                            } else if(row){
+                                reject (new VoteSameProposalError())
+                            } else {
                                 sql = "INSERT INTO Vote (user_id, proposal_id, score) VALUES (?, ?, ?)";
                                 db.run(sql, [userId, id, score], function (err){
                                     if(err){
@@ -271,15 +273,12 @@ export default function ProposalDAO() {
                                     } else {
                                         resolve(score)
                                     }
-                                })
-                            } else {
-                                reject(new UnauthorizedUserErrorVote())
+                                })                                
                             }
                         })
                     }
                 }
-            })
-            
+            })            
         });
     }
 

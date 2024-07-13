@@ -14,7 +14,7 @@ import API from '../API';
  */
 const Phase3Page = ({ user }) => {
     
-    const { setFase, budget, setBudget } = usePhase(); //Stati per gestire fase e budget
+    const { budget, getBudgetAndFase } = usePhase(); //Stati per gestire fase e budget
     const [approvedProposals, setApprovedProposals] = useState([]); //Stato per gestire le proposte approvate, inizialmente array vuoto
     const [alertMessage, setAlertMessage] = useState(null); // Stato per gestire i messaggi di alert, inizialmente null
     const navigate = useNavigate(); //Hook per gestire la navigazione
@@ -22,6 +22,24 @@ const Phase3Page = ({ user }) => {
     const setFeedbackFromError = (error) => {
         setFeedback(error.message);
     };
+
+   /**
+   * UseEffect per recuperare fase e budget attuale
+   * Richiama la funzione getBudgetAndFase dal context
+   */
+    useEffect(() => {
+        const fetchData = async () => {
+        try {
+            await getBudgetAndFase()
+        } catch (error) {
+            console.error('Error fetching budget and fase:', error);
+            setAlertMessage('Errore nel recupero del budget e della fase');
+            setAlertVariant('danger');
+        }
+    };
+
+    fetchData(); // Chiamo la funzione all'avvio del componente
+}, [getBudgetAndFase]);
 
     /**
      * UseEffect per recuperare le proposte approvate

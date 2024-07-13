@@ -96,12 +96,12 @@ POST http://localhost:3001/api/proposals/1/vote HTTP/1.1
 content-type: application/json
 
 {
-    "score": 2
+    "score": 1
 }
 ###
 
 ## Recupera le proposte votate dall'utente
-GET http://localhost:3001/api/proposals/voted/2 HTTP/1.1
+GET http://localhost:3001/api/proposals/voted/1 HTTP/1.1
 ###
 
 ## Elimina la votazione di una proposta precedentemente votata dall'utente

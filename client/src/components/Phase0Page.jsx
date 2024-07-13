@@ -2,7 +2,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import '../App.css';
 
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Container, Col, Card, Form, Button, Alert, Row, InputGroup } from 'react-bootstrap';
 import { usePhase } from '../contexts/PhaseContext';
 import { useNavigate } from 'react-router-dom';
@@ -15,7 +15,7 @@ import API from '../API';
  */
 const Phase0Page = ({ user }) => {
   const navigate = useNavigate(); //hook per navigare tra le pagie
-  const { fase, avanzareFase } = usePhase(); //Stati per la fase presi dela context
+  const { avanzareFase, getBudgetAndFase } = usePhase(); //Stati per la fase presi dela context
   const { setFeedback, setFeedbackFromError } = useContext(FeedbackContext); //Stato per i feedback presi dal context
   const [budget, setBudget] = useState(''); //Stato per il budget inizializzato a stringa vuota
   const [showBudgetAlert, setShowBudgetAlert] = useState(false);
@@ -24,6 +24,24 @@ const Phase0Page = ({ user }) => {
   const [showAlert, setShowAlert] = useState(false);
   const [alreadySetBudgetAlert, setAlreadySetBudgetAlert] = useState(false);
   const [successAlert, setSuccessAlert] = useState(false);
+
+  /**
+   * UseEffect per recuperare fase e budget attuale
+   * Richiama la funzione getBudgetAndFase dal context
+   */
+  useEffect(() => {
+    const fetchData = async () => {
+    try {
+        await getBudgetAndFase()
+    } catch (error) {
+        console.error('Error fetching budget and fase:', error);
+        setAlertMessage('Errore nel recupero del budget e della fase');
+        setAlertVariant('danger');
+    }
+  };
+
+    fetchData(); // Chiamo la funzione all'avvio del componente
+}, [getBudgetAndFase]);
 
   /**
    * Setto lo stato del budget ogni volta che cambia l'input
@@ -36,7 +54,7 @@ const Phase0Page = ({ user }) => {
    * Funzione per impostare il budget quando premo il pulsante
    */
   const handleBudgetSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); //permette la submission
 
     if (budget === '') {
       setFeedbackFromError(new Error('È necessario inserire un budget.'));

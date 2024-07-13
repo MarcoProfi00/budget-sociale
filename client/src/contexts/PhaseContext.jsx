@@ -2,7 +2,7 @@ import React, { useEffect, useState, createContext, useContext } from 'react';
 import API from '../API';
 
 //Context per la fase e il budget
-const PhaseContext = createContext();
+const PhaseContext = React.createContext();
 
 //hook utilizzato per accedere al valore di PhaseContext
 export const usePhase = () => useContext(PhaseContext);

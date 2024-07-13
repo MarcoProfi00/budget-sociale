@@ -7,6 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Card, Table, Alert, OverlayTrigger, Tooltip, Dropdown  } from 'react-bootstrap';
 import { usePhase } from '../contexts/PhaseContext.jsx';
 import API from '../API';
+import { WrongFaseError } from '../../../server/errors/proposalError.mjs';
 
 /**
  * Componente che gestisce la pagina di votazione delle proposte
@@ -14,7 +15,7 @@ import API from '../API';
  */
 const Phase2Page = ({ user }) => {
 
-  const { setFase, setBudget, avanzareFase } = usePhase(); //Stati dal context per gestire budget e fase
+  const { avanzareFase, getBudgetAndFase } = usePhase(); //Stati dal context per gestire budget e fase
   const [proposals, setProposals] = useState([]); //Stato per ottenere le proposte, inizialmente array vuoto
   const [alertMessage, setAlertMessage] = useState(null); // Stato per gestire i messaggi di alert, inizialmente null
   const [alertVariant, setAlertVariant] = useState('success'); //Stato per gestire il colore dell'alert, inizialmente success
@@ -61,6 +62,24 @@ const Phase2Page = ({ user }) => {
 
     fetchProposals(user); //Chiamo la funzione all'avvio del componente
   }, [user])
+  
+  /**
+   * UseEffect per recuperare fase e budget attuale
+   * Richiama la funzione getBudgetAndFase dal context
+   */
+  useEffect(() => {
+    const fetchData = async () => {
+    try {
+        await getBudgetAndFase()
+    } catch (error) {
+        console.error('Error fetching budget and fase:', error);
+        setAlertMessage('Errore nel recupero del budget e della fase');
+        setAlertVariant('danger');
+    }
+  };
+
+    fetchData(); // Chiamo la funzione all'avvio del componente
+}, [getBudgetAndFase]);
 
   /**
    * Funzione per votare una proposta in base al suo id
@@ -78,9 +97,14 @@ const Phase2Page = ({ user }) => {
       }, 3000);
     } catch(error) {
       console.error("Errore nel registrare il voto:", error);
+      setAlertMessage("Puoi esprimere un solo voto per ogni proposta");
       setAlertVariant('danger');
-      
-      if (error.response && error.response.data && error.response.data.message) {
+      setTimeout(() => {
+        setAlertMessage(null);
+      }, 3000);
+      console.log(error)
+    
+      /*if (error.response && error.response.data && error.response.data.message) {
         setAlertMessage(`Errore nel registrare il voto: ${error.response.data.message}`);
       } else {
         setAlertMessage("Puoi esprimere un solo voto per ogni proposta");
@@ -88,6 +112,7 @@ const Phase2Page = ({ user }) => {
       setTimeout(() => {
         setAlertMessage(null);
       }, 3000);
+      */
     }
   }
 

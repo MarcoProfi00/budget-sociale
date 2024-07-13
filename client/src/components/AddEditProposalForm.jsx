@@ -51,7 +51,7 @@ const AddEditProposalForm = ({ proposal, mode, user }) => {
      * Funzione che gestisce l'invio del form
      */
     const handleSubmit = async (event) => {
-        event.preventDefault();
+        event.preventDefault(); //permette la submission
 
         // Controllo se la descrizione è troppo lunga
         if (description.length > 50) {

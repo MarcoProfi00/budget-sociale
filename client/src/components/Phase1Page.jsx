@@ -14,28 +14,29 @@ import API from '../API';
  */
 const Phase1Page = ({ user }) => {
 
-  const { setFase, budget, setBudget, avanzareFase } = usePhase(); //Stati e funzionio per fase e budget presi dal context
+  const { budget, avanzareFase, getBudgetAndFase } = usePhase(); //Stati e funzionio per fase e budget presi dal context
   const [proposals, setProposals] = useState([]); //Stato per ottenere le proprie proposte inizializzato ad array vuoto
   const [alertMessage, setAlertMessage] = useState(null); // Stato per gestire i messaggi di alert inizializzato a null
+  const [alertVariant, setAlertVariant] = useState('success');
   const navigate = useNavigate(); //Hook per navigare tra le pagine
 
-  /**
-    * UseEffect per recuperare fase e budget attuale
-    */
+    /**
+     * UseEffect per recuperare fase e budget attuale
+     * Richiama la funzione getBudgetAndFase dal context
+     */
     useEffect(() => {
         const fetchData = async () => {
         try {
-            const budgetSociale = await API.getBudgetAndFase();
-            setFase(budgetSociale.current_fase); // Imposto la fase nel contesto
-            setBudget(budgetSociale.amount); // Imposto il budget nel contesto
+            await getBudgetAndFase()
         } catch (error) {
             console.error('Error fetching budget and fase:', error);
             setAlertMessage('Errore nel recupero del budget e della fase');
+            setAlertVariant('danger');
         }
     };
     
         fetchData(); // Chiamo la funzione all'avvio del componente
-    }, [setFase, setBudget]);
+    }, [getBudgetAndFase]);
     
 
   /**
@@ -86,12 +87,14 @@ const Phase1Page = ({ user }) => {
       setProposals(proposals.filter((proposal) => proposal.id !== proposalId));
       
       setAlertMessage("Proposta eliminata correttamente")
+      setAlertVariant('success');
       setTimeout(() => {
         setAlertMessage(null);
       }, 3000)
     } catch (error) {
       console.log("Errore nell'eliminazione della proposta:", error);
       setAlertMessage('Errore nell\'eliminazione della proposta');
+      setAlertVariant('danger');
     }
   }
 
@@ -100,7 +103,7 @@ const Phase1Page = ({ user }) => {
     <Container fluid className="gap-3 align-items-center">
       {/* Alert */}
       {alertMessage && (
-        <Alert variant="success" onClose={() => setAlertMessage(null)} dismissible>
+        <Alert variant={alertVariant} onClose={() => setAlertMessage(null)} dismissible>
           {alertMessage}
         </Alert>
       )}

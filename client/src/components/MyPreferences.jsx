@@ -13,7 +13,7 @@ const MyPreferences = ({ user }) => {
   const navigate = useNavigate();
   const [preferences, setPreferences] = useState([]); //Stato per gestire le proposte con le preferenze, inizialmente array vuoto
   const [alertMessage, setAlertMessage] = useState(null); //Stato per gestire il messaggio di errore
-
+  const [alertVariant, setAlertVariant] = useState('success'); //Stato per gestire il colore dell'alert, inizialmente success
   /**
    * UseEffect che recupera le proposte con le preferenze
    */
@@ -52,6 +52,7 @@ const MyPreferences = ({ user }) => {
     } catch (error) {
       console.error("Errore nell'eliminazione della preferenza:", error);
       setAlertMessage("Errore nell'eliminazione della preferenza");
+      setAlertVariant('danger')
     }
   };
 
@@ -60,7 +61,7 @@ const MyPreferences = ({ user }) => {
       
       {/* Alert */}
       {alertMessage && (
-        <Alert variant="success" onClose={() => setAlertMessage(null)} dismissible>
+        <Alert variant={alertVariant} onClose={() => setAlertMessage(null)} dismissible>
           {alertMessage}
         </Alert>
       )}

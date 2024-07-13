@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
-import { Button, Col, Container, Row } from "react-bootstrap";
+import { Col, Container, Row } from "react-bootstrap";
 import { LogoutButton, LoginButton } from './Auth';
+import { Link } from 'react-router-dom';
 import '../App.css';
 
 function Header(props) {
@@ -10,8 +11,10 @@ function Header(props) {
                 <Row>
                     <Col xs={4} md={4}>
                         <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <i className="bi bi-cash-coin me-2" style={{ color: 'white' }}></i>
-                            <span className="h5 mb-0" style={{ color: 'white' }}>Budget Sociale</span>
+                            <Link to="/" style={{ textDecoration: 'none', color: 'white' }}>
+                                <i className="bi bi-cash-coin me-2" style={{ color: 'white' }}></i>
+                                <span className="h5 mb-0" style={{ color: 'white' }}>Budget Sociale</span>
+                            </Link>
                         </div>
                     </Col>
                     
