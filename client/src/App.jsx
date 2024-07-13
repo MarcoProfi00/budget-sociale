@@ -63,8 +63,8 @@ function App() {
 
       // Dopo il login, ottengo la fase e il budget attraverso API e aggiorno lo stato
       const budgetSociale = await API.getBudgetAndFase();
-      setFase(budgetSociale.current_fase); //Imposto la fase nel contesto
-      setBudget(budgetSociale.amount); //Imposto il budget nel contesto
+      setFase(budgetSociale.current_fase); //Imposto la fase corrente
+      setBudget(budgetSociale.amount); //Imposto il budget corrente
 
     } catch (error) {
       setLoggedIn(false);
@@ -88,7 +88,6 @@ function App() {
 
   return (
     <FeedbackContext.Provider value={{ setFeedback, setFeedbackFromError }}>
-      <PhaseProvider>
         <div className="min-vh-100 d-flex flex-column">
           <Header logout={handleLogout} user={user} loggedIn={loggedIn} />
           <Container fluid className="flex-grow-1 d-flex flex-column">
@@ -122,7 +121,6 @@ function App() {
             </Routes>
           </Container>
         </div>
-      </PhaseProvider>
     </FeedbackContext.Provider>
   );
 }
