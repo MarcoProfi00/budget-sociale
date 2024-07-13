@@ -103,16 +103,6 @@ const Phase2Page = ({ user }) => {
         setAlertMessage(null);
       }, 3000);
       console.log(error)
-    
-      /*if (error.response && error.response.data && error.response.data.message) {
-        setAlertMessage(`Errore nel registrare il voto: ${error.response.data.message}`);
-      } else {
-        setAlertMessage("Puoi esprimere un solo voto per ogni proposta");
-      }
-      setTimeout(() => {
-        setAlertMessage(null);
-      }, 3000);
-      */
     }
   }
 

@@ -6,7 +6,7 @@ import { Container } from 'react-bootstrap/';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import API from "./API.js";
 import FeedbackContext from './contexts/FeedbackContext.js';
-import { PhaseProvider, usePhase } from './contexts/PhaseContext.jsx';
+import { usePhase } from './contexts/PhaseContext.jsx';
 
 import { LoginForm } from './components/Auth.jsx';
 import { NotFoundLayout } from './components/PageLayout.jsx';
@@ -28,7 +28,7 @@ function App() {
   const [user, setUser] = useState(null); //Stato per gesire l'utente
   const [loggedIn, setLoggedIn] = useState(false); //Stato per indicare se l'utente è loggato
   const { setFeedback, setFeedbackFromError } = useContext(FeedbackContext); //Stato per i messaggi di feedback
-  const { fase, setFase, budget, setBudget, getBudgetAndFase } = usePhase(); //Stati ottenuti dal contesto PhaseContext per gestire fase corrente e budget
+  const { fase, getBudgetAndFase } = usePhase(); //Stati ottenuti dal contesto PhaseContext per gestire fase corrente e budget
 
   /**
    * UseEffect per caricare le informazioni dell'utente all'avvio dell'applicazione
