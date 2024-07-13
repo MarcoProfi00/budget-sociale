@@ -12,6 +12,7 @@ const BUDGET_NOT_EXIST = "Budget not found"
 const FASE_ERROR = "The phase not allowed"
 const PROPOSAL_OVER_TO_BUDGET = "Cost of the proposal greater than the defined budget"
 const ALREADY_THREE_PROPOSALS_ERROR = "User has already 3 proposals";
+const WRON_FASE = "Operation not permitted, incorrect phase"
 
 
 export class ProposalsNotFoundError extends Error{
@@ -98,6 +99,14 @@ export class AlreadyThreeProposalsError extends Error{
     constructor(){
         super();
         this.message = ALREADY_THREE_PROPOSALS_ERROR;
+        this.code = 403;
+    }
+}
+
+export class WrongFaseError extends Error{
+    constructor(){
+        super();
+        this.message = WRON_FASE;
         this.code = 403;
     }
 }

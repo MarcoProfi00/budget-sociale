@@ -5,7 +5,7 @@
 import db from "../db/db.mjs"
 import crypto from 'crypto';
 import { UserNotFoundError } from "../errors/userError.mjs";
-import { NotAdminError, NotAdminErrorBudget, FaseError, BudgetNotExistError } from "../errors/proposalError.mjs";
+import { NotAdminError, NotAdminErrorBudget, FaseError, BudgetNotExistError, WrongFaseError } from "../errors/proposalError.mjs";
 import BudgetSociale from "../components/BudgetSociale.mjs";
 
 export default function UserDAO() {
@@ -164,37 +164,51 @@ export default function UserDAO() {
      */
     this.restartProcess = (userId) => {
         return new Promise((resolve, reject) => {
-            let sql = `SELECT * FROM User WHERE user.id = ? AND User.role = 'Admin'`;
-            db.get(sql, [userId], (err, row) => {
-                if(err){
-                    reject(err);
-                } else if(!row){
-                    reject(new NotAdminError())
+            let sql = "SELECT * FROM BudgetSociale";
+            db.get(sql, (err, row) => {
+                if(err) {
+                    reject(err)
+                } else if(!row) {
+                    reject(new BudgetNotExistError())
                 } else {
-                    sql = "DELETE FROM Vote;";
-                    db.run(sql, function(err) {
-                        if(err){
-                            reject(err)
-                        } else {
-                            sql = "DELETE FROM Proposal;";
-                            db.run(sql, function(err) {
-                                if(err){
-                                    reject(err)
-                                } else {
-                                    sql = "DELETE FROM BudgetSociale;";
-                                    db.run(sql, function(err) {
-                                        if(err){
-                                            reject(err)
-                                        } else {
-                                            resolve(true)
-                                        }
-                                    })
-                                }
-                            })
-                        }
-                    })
+                    const fase = row.current_fase;
+                    if(fase !== 3) {
+                        reject(new WrongFaseError())
+                    } else {
+                        sql = `SELECT * FROM User WHERE user.id = ? AND User.role = 'Admin'`;
+                        db.get(sql, [userId], (err, row) => {
+                            if(err){
+                                reject(err);
+                            } else if(!row){
+                                reject(new NotAdminError())
+                            } else {
+                                sql = "DELETE FROM Vote;";
+                                db.run(sql, function(err) {
+                                    if(err){
+                                        reject(err)
+                                    } else {
+                                        sql = "DELETE FROM Proposal;";
+                                        db.run(sql, function(err) {
+                                            if(err){
+                                                reject(err)
+                                            } else {
+                                                sql = "DELETE FROM BudgetSociale;";
+                                                db.run(sql, function(err) {
+                                                    if(err){
+                                                        reject(err)
+                                                    } else {
+                                                        resolve(true)
+                                                    }
+                                                })
+                                            }
+                                        })
+                                    }
+                                })
+                            }
+                        })
+                    }
                 }
-            })
+            })            
         })
     }
 }

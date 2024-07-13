@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Alert } from 'react-bootstrap';
+import { Form, Button, Alert, InputGroup } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePhase } from '../contexts/PhaseContext.jsx';
 import { BiArrowBack } from 'react-icons/bi';
@@ -52,6 +52,13 @@ const AddEditProposalForm = ({ proposal, mode, user }) => {
      */
     const handleSubmit = async (event) => {
         event.preventDefault();
+
+        // Controllo se la descrizione è troppo lunga
+        if (description.length > 50) {
+          setAlertVariant('danger');
+          setAlertMessage('La descrizione è troppo lunga, puoi inserire al massimo 50 caratteri');
+          return;
+        }
 
         //controllo se il cost della proposal è maggiore del budget
         if (cost > budget) {
@@ -124,22 +131,29 @@ const AddEditProposalForm = ({ proposal, mode, user }) => {
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
               <Form.Label>Description</Form.Label>
-              <Form.Control 
-                type="text" 
-                required 
-                value={description} 
-                onChange={(e) => setDescription(e.target.value)} 
-              />
+              <div className="d-flex align-items-center">
+                <Form.Control 
+                  type="text" 
+                  required 
+                  value={description} 
+                  maxLength={50}
+                  onChange={(e) => setDescription(e.target.value)} 
+                />
+                <span className="ms-2">{description.length}/50</span>
+              </div>
             </Form.Group>
 
             <Form.Group className="mb-3">
               <Form.Label>Cost</Form.Label>
-              <Form.Control 
-                type="number" 
-                required 
-                value={cost} 
-                onChange={(e) => setCost(e.target.value)} 
-              />
+              <InputGroup>
+                <InputGroup.Text>€</InputGroup.Text>
+                <Form.Control 
+                  type="number" 
+                  required 
+                  value={cost} 
+                  onChange={(e) => setCost(e.target.value)} 
+                />
+              </InputGroup>
             </Form.Group>
             
             {/* Diverso colore del pulsante in base al fatto che sto in modalità edit o add */}

@@ -3,7 +3,7 @@ import morgan from 'morgan';
 import {check, validationResult} from 'express-validator'; // validation middleware
 import ProposalDAO from "./dao/proposalDAO.mjs";
 import Proposal, { Vote } from './components/Proposal.mjs';
-import { ProposalOverToBudgetError, BudgetNotExistError, FaseError, NotAdminError, NotAdminErrorBudget, ProposalAlreadyExistsError, ProposalsNotFoundError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError, AlreadyThreeProposalsError } from './errors/proposalError.mjs';
+import { ProposalOverToBudgetError, WrongFaseError, BudgetNotExistError, FaseError, NotAdminError, NotAdminErrorBudget, ProposalAlreadyExistsError, ProposalsNotFoundError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError, AlreadyThreeProposalsError } from './errors/proposalError.mjs';
 import UserDAO from './dao/userDAO.mjs';
 import passport from 'passport';
 import LocalStrategy from 'passport-local';
@@ -241,7 +241,7 @@ app.get('/api/proposals/id/:proposalId', isLoggedIn, async (req, res) => {
  * POST /api/proposals
  */
 app.post('/api/proposals', isLoggedIn, [
-  check('description').isString().notEmpty(),
+  check('description').isString().notEmpty().isLength({ max: 50 }),
   check('cost').isNumeric().notEmpty()
 ], async (req, res) => {
   const errors = validationResult(req);
@@ -256,7 +256,7 @@ app.post('/api/proposals', isLoggedIn, [
     const result = await proposalDAO.addProposal(proposal, req.user.id)
     res.json(result);
   } catch (err) {
-    if (err instanceof ProposalAlreadyExistsError, BudgetNotExistError, ProposalOverToBudgetError, AlreadyThreeProposalsError) {
+    if (err instanceof WrongFaseError, ProposalAlreadyExistsError, BudgetNotExistError, ProposalOverToBudgetError, AlreadyThreeProposalsError) {
       res.status(err.code).json({ error: err.message });
     } else {
       res.status(503).json({error: `Database error during the creation of the new proposal: ${err}`});
@@ -269,7 +269,7 @@ app.post('/api/proposals', isLoggedIn, [
  * PUT /api/proposals/:id
  */
 app.put('/api/proposals/:id', isLoggedIn, [
-  check('description').isString(),
+  check('description').isString().notEmpty().isLength({ max: 50 }),
   check('cost').isNumeric()
 ], async (req, res) => {
   const errors = validationResult(req);
@@ -287,7 +287,7 @@ app.put('/api/proposals/:id', isLoggedIn, [
       res.json(result);
     }
   } catch (err) {
-    if(err instanceof UnauthorizedUserError){
+    if(err instanceof UnauthorizedUserError, WrongFaseError, BudgetNotExistError, ProposalsNotFoundError){
       res.status(err.code).json({ error: err.message });
     } else {
       res.status(503).json({error: `Database error during the update of proposal ${req.params.id}: ${err}`});
@@ -304,7 +304,7 @@ app.delete('/api/proposals/:id', isLoggedIn, async(req, res) => {
     await proposalDAO.deleteProposal(req.user.id, req.params.id);
     res.status(200).end();
   } catch (err) {
-    if(err instanceof UnauthorizedUserError){
+    if(err instanceof UnauthorizedUserError, WrongFaseError, BudgetNotExistError){
       res.status(err.code).json({ error: err.message });
     } else {
       res.status(503).json({error: `Database error during the deletion of proposal ${req.params.id}: ${err} `});
@@ -355,7 +355,7 @@ app.post('/api/proposals/:id/vote', isLoggedIn, [
       res.json(result);
     }
   } catch (err) {
-    if(err instanceof UnauthorizedUserErrorVote){
+    if(err instanceof UnauthorizedUserErrorVote, BudgetNotExistError, WrongFaseError){
       res.status(err.code).json({ error: err.message });
     } else {
       res.status(503).json({error: `Database error during the vote of proposal ${req.params.id}: ${err}`});
@@ -393,7 +393,7 @@ app.delete('/api/proposals/voted/delete/:id', isLoggedIn, async(req, res) => {
     await proposalDAO.deleteOwnPreference(req.user.id, req.params.id);
     res.status(200).end();
   } catch (err) {
-    if(err instanceof UnauthorizedUserError){
+    if(err instanceof UnauthorizedUserError, BudgetNotExistError, WrongFaseError){
       res.status(err.code).json({ error: err.message });
     } else {
     res.status(503).json({error: `Database error during the deletion of score of proposal ${req.params.id}: ${err} `});
@@ -436,7 +436,11 @@ app.put('/api/proposal/approve', isLoggedIn, async (req, res) => {
       res.json(result);
     }
   } catch(err) {
+    if(err instanceof WrongFaseError) {
+      res.status(err.code).json({ error: err.message });
+    } else {
     res.status(503).json({error: `Database error during the update of approved field's proposal`})
+    }
   }
 })
 
@@ -491,7 +495,7 @@ app.delete('/api/proposal/restart', isLoggedIn, async(req, res) => {
     await userDAO.restartProcess(req.user.id);
     res.status(200).end();
   } catch (err) {
-    if(err instanceof NotAdminError){
+    if(err instanceof NotAdminError, WrongFaseError, BudgetNotExistError){
       res.status(err.code).json({ error: err.message });
     } else {
       res.status(503).json({error: `Database error during the deletion of proposal`});

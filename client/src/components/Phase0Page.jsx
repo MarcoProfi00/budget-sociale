@@ -3,7 +3,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import '../App.css';
 
 import React, { useState, useContext } from 'react';
-import { Container, Col, Card, Form, Button, Alert, Row } from 'react-bootstrap';
+import { Container, Col, Card, Form, Button, Alert, Row, InputGroup } from 'react-bootstrap';
 import { usePhase } from '../contexts/PhaseContext';
 import { useNavigate } from 'react-router-dom';
 import FeedbackContext from '../contexts/FeedbackContext';
@@ -118,13 +118,16 @@ const Phase0Page = ({ user }) => {
                 <h3><i className="bi bi-piggy-bank text-success" style={{ fontSize: '3rem' }}></i> Inserisci il budget </h3> 
               </Form.Label>
               
-              <Form.Control
-                type="number"
-                min={0}
-                placeholder="Enter budget"
-                value={budget}
-                onChange={handleBudgetChange}
-              />
+              <InputGroup>
+                <InputGroup.Text>€</InputGroup.Text>
+                <Form.Control
+                  type="number"
+                  min={0}
+                  placeholder="Enter budget"
+                  value={budget}
+                  onChange={handleBudgetChange}
+                />
+              </InputGroup>
 
             </Form.Group>
             
@@ -175,6 +178,5 @@ const Phase0Page = ({ user }) => {
     </Container>
   );
 };
-
 
 export default Phase0Page;

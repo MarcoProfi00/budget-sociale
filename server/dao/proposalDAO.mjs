@@ -4,7 +4,7 @@
 
 import Proposal, { ProposalWithVote, ProposalsApproved, ProposalsNotApproved, ProposalsWhithSumOfScore } from "../components/Proposal.mjs";
 import db from "../db/db.mjs"
-import { ProposalOverToBudgetError, ProposalsNotFoundError, ProposalAlreadyExistsError, AlreadyThreeProposalsError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError, NotAdminError, BudgetNotExistError } from "../errors/proposalError.mjs";
+import { ProposalOverToBudgetError, ProposalsNotFoundError, ProposalAlreadyExistsError, AlreadyThreeProposalsError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError, WrongFaseError, BudgetNotExistError } from "../errors/proposalError.mjs";
 
 function mapRowsToProposal(rows){
     return rows.map(row => new Proposal(row.id, row.user_id, row.description, row.cost, row.approved))
@@ -88,35 +88,40 @@ export default function ProposalDAO() {
                     if(number >= 3) {
                         reject(new AlreadyThreeProposalsError())
                     } else {
-                        sql = "SELECT amount FROM BudgetSociale";
+                        sql = "SELECT * FROM BudgetSociale";
                         db.get(sql, (err, row) => {
                             if (err) {
                                 reject(err);
                             } else if (!row) {
                                 reject(new BudgetNotExistError());
                             } else {
-                                let budget = row.amount;
-                                sql = "SELECT * FROM Proposal WHERE description = ?";
-                                db.get(sql, [proposal.description], (err, row) => {
-                                    if (err) {
-                                        reject(err);
-                                    } else if (row) {
-                                        reject(new ProposalAlreadyExistsError());
-                                    } else if (proposal.cost > budget) {
-                                        reject(new ProposalOverToBudgetError());
-                                    } else {
-                                        sql = "INSERT INTO Proposal (user_id, description, cost, approved) VALUES (?, ?, ?, ?)";
-                                        db.run(sql, [proposal.userId, proposal.description, proposal.cost, proposal.approved], function (err) {
-                                            if (err) {
-                                                reject(err);
-                                            } else {
-                                                proposal.id = this.lastID;
-                                                resolve(proposal);
-                                            }
-                                        });
-                                    }
-                                });
-                            }
+                                const fase = row.current_fase
+                                if(fase !== 1) {
+                                    reject (new WrongFaseError())
+                                } else {
+                                    let budget = row.amount;
+                                    sql = "SELECT * FROM Proposal WHERE description = ?";
+                                    db.get(sql, [proposal.description], (err, row) => {
+                                        if (err) {
+                                            reject(err);
+                                        } else if (row) {
+                                            reject(new ProposalAlreadyExistsError());
+                                        } else if (proposal.cost > budget) {
+                                            reject(new ProposalOverToBudgetError());
+                                        } else {
+                                            sql = "INSERT INTO Proposal (user_id, description, cost, approved) VALUES (?, ?, ?, ?)";
+                                            db.run(sql, [proposal.userId, proposal.description, proposal.cost, proposal.approved], function (err) {
+                                                if (err) {
+                                                    reject(err);
+                                                } else {
+                                                    proposal.id = this.lastID;
+                                                    resolve(proposal);
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                            }  
                         });
                     } 
                 }
@@ -141,15 +146,29 @@ export default function ProposalDAO() {
                 } else if(!row){
                     reject(new UnauthorizedUserError())
                 } else {
-                    sql = "UPDATE Proposal SET description = ?, cost = ?, approved = 0 WHERE id = ? AND user_id = ?"
-                    db.run(sql, [proposal.description, proposal.cost, id, userId], function (err){
-                        if(err){
-                            reject(err)
-                        }
-                        if (this.changes !== 1){
-                            reject(new ProposalsNotFoundError())
+                    sql = "SELECT * FROM BudgetSociale";
+                    db.get(sql, (err, row) => {
+                        if(err) {
+                            reject(err);
+                        } else if (!row) {
+                            reject(new BudgetNotExistError())
                         } else {
-                            resolve(proposal)
+                            const fase = row.current_fase;
+                            if(fase !== 1) {
+                                reject(new WrongFaseError())
+                            } else {
+                                sql = "UPDATE Proposal SET description = ?, cost = ?, approved = 0 WHERE id = ? AND user_id = ?"
+                                db.run(sql, [proposal.description, proposal.cost, id, userId], function (err){
+                                    if(err){
+                                        reject(err)
+                                    }
+                                    if (this.changes !== 1){
+                                        reject(new ProposalsNotFoundError())
+                                    } else {
+                                        resolve(proposal)
+                                    }
+                                })
+                            }
                         }
                     })
                 }
@@ -166,23 +185,37 @@ export default function ProposalDAO() {
      */
     this.deleteProposal = (userId, id) => {
         return new Promise((resolve, reject) => {
-            let sql = "SELECT * FROM Proposal WHERE id = ? AND user_id = ?";
-            db.get(sql, [id, userId], (err, row) => {
+            let sql = "SELECT * FROM BudgetSociale";
+            db.get(sql, (err, row) => {
                 if(err) {
-                    reject(err);
-                } else if(!row){
-                    reject(new UnauthorizedUserError())
+                    reject(err)
+                } else if (!row) {
+                    reject(new BudgetNotExistError())
                 } else {
-                    sql = "DELETE FROM Proposal WHERE id = ? AND user_id = ?";
-                    db.run(sql, [id, userId], function(err){
-                        if(err) {
-                            reject(err);
-                        } else {
-                            resolve(this.changes);
-                        }
-                    })
+                    const fase = row.current_fase
+                    if(fase !== 1) {
+                        reject(new WrongFaseError())
+                    } else {
+                        sql = "SELECT * FROM Proposal WHERE id = ? AND user_id = ?";
+                        db.get(sql, [id, userId], (err, row) => {
+                            if(err) {
+                                reject(err);
+                            } else if(!row){
+                                reject(new UnauthorizedUserError())
+                            } else {
+                                sql = "DELETE FROM Proposal WHERE id = ? AND user_id = ?";
+                                db.run(sql, [id, userId], function(err){
+                                    if(err) {
+                                        reject(err);
+                                    } else {
+                                        resolve(this.changes);
+                                    }
+                                })
+                            }
+                        })
+                    }
                 }
-            })
+            })    
         })
     }
 
@@ -215,23 +248,38 @@ export default function ProposalDAO() {
      */
     this.voteProposal = (userId, id, score) => {
         return new Promise((resolve, reject) => {
-            let sql = "SELECT * FROM Proposal WHERE id = ? AND user_id = ?";
-            db.get(sql, [id, userId], (err, row) => {
+            let sql = "SELECT * FROM BudgetSociale";
+            db.get(sql, (err, row) => {
                 if(err) {
-                    reject(err);
-                } else if(!row){
-                    sql = "INSERT INTO Vote (user_id, proposal_id, score) VALUES (?, ?, ?)";
-                    db.run(sql, [userId, id, score], function (err){
-                        if(err){
-                            reject(err)
-                        } else {
-                            resolve(score)
-                        }
-                    })
+                    reject(err)
+                } else if (!row) {
+                    reject (new BudgetNotExistError())
                 } else {
-                    reject(new UnauthorizedUserErrorVote())
+                    const fase = row.current_fase
+                    if(fase !== 2) {
+                        reject(new WrongFaseError())
+                    } else {
+                        sql = "SELECT * FROM Proposal WHERE id = ? AND user_id = ?";
+                        db.get(sql, [id, userId], (err, row) => {
+                            if(err) {
+                                reject(err);
+                            } else if(!row){
+                                sql = "INSERT INTO Vote (user_id, proposal_id, score) VALUES (?, ?, ?)";
+                                db.run(sql, [userId, id, score], function (err){
+                                    if(err){
+                                        reject(err)
+                                    } else {
+                                        resolve(score)
+                                    }
+                                })
+                            } else {
+                                reject(new UnauthorizedUserErrorVote())
+                            }
+                        })
+                    }
                 }
             })
+            
         });
     }
 
@@ -268,23 +316,38 @@ export default function ProposalDAO() {
      */
     this.deleteOwnPreference = (userId, proposalId) => {
         return new Promise((resolve, reject) => {
-            let sql = "SELECT * FROM Vote WHERE user_id = ? AND proposal_id = ?";
-            db.get(sql, [userId, proposalId], (err, row) => {
+            let sql = "SELECT * FROM BudgetSociale";
+            db.get(sql, (err, row) => {
                 if(err) {
-                    reject(err);
-                } else if(!row){
-                    reject(new UnauthorizedUserError())
+                    reject(err)
+                } else if (!row) {
+                    reject (new BudgetNotExistError())
                 } else {
-                    sql = "DELETE FROM Vote WHERE user_id = ? AND proposal_id = ?";
-                    db.run(sql, [userId, proposalId], function (err) {
-                        if(err){
-                            reject(err)
-                        } else {
-                            resolve(this.changes);
-                        }
-                    })
+                    const fase = row.current_fase;
+                    if (fase !== 2) {
+                        reject (new WrongFaseError())
+                    } else {
+                        sql = "SELECT * FROM Vote WHERE user_id = ? AND proposal_id = ?";
+                        db.get(sql, [userId, proposalId], (err, row) => {
+                            if(err) {
+                                reject(err);
+                            } else if(!row){
+                                reject(new UnauthorizedUserError())
+                            } else {
+                                sql = "DELETE FROM Vote WHERE user_id = ? AND proposal_id = ?";
+                                db.run(sql, [userId, proposalId], function (err) {
+                                    if(err){
+                                        reject(err)
+                                    } else {
+                                        resolve(this.changes);
+                                    }
+                                })
+                            }
+                        })
+                    }
                 }
             })
+            
         })
     }
 
@@ -346,30 +409,35 @@ export default function ProposalDAO() {
                 if(err) {
                     reject(err);
                 } else {
-                    const budget = row.amount
-                    for (let i = 0; i < proposals.length; i++){
-                        if(totalCost + proposals[i].cost <= budget){
-                            selectedProposals.push(proposals[i]);
-                            totalCost += proposals[i].cost;
-                            if(totalCost >= budget) {
+                    const fase = row.current_fase;
+                    if(fase !==3 ){
+                        reject (new WrongFaseError)
+                    } else {
+                        const budget = row.amount
+                        for (let i = 0; i < proposals.length; i++){
+                            if(totalCost + proposals[i].cost <= budget){
+                                selectedProposals.push(proposals[i]);
+                                totalCost += proposals[i].cost;
+                                if(totalCost >= budget) {
+                                    break
+                                }
+                            } else {
                                 break
                             }
-                        } else {
-                            break
                         }
-                    }
-                    sql = "BEGIN TRANSACTION;";
-                    for(let i = 0; i < selectedProposals.length; i++){
-                        sql += `UPDATE Proposal SET approved = 1 WHERE id = '${selectedProposals[i].id}';`
-                    }
-                    sql += "COMMIT;";
-                    db.exec(sql, function(err) {
-                        if(err){
-                            db.exec("ROLLBACK;", () => reject(err)); //annullo la transazione con un ROLLBACK
-                        } else {
-                            resolve(true)
+                        sql = "BEGIN TRANSACTION;";
+                        for(let i = 0; i < selectedProposals.length; i++){
+                            sql += `UPDATE Proposal SET approved = 1 WHERE id = '${selectedProposals[i].id}';`
                         }
-                    })
+                        sql += "COMMIT;";
+                        db.exec(sql, function(err) {
+                            if(err){
+                                db.exec("ROLLBACK;", () => reject(err)); //annullo la transazione con un ROLLBACK
+                            } else {
+                                resolve(true)
+                            }
+                        })  
+                    }    
                 }
             }) 
         })
