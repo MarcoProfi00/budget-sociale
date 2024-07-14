@@ -54,7 +54,7 @@ function App() {
    * Funzione che gestisce il login dell'utente
    * Chiama API del login per ottenere le informazioni dell'utente
    * Chiama la funzione getBudgetAndFase del contesto PhaseContext per ottenere la fase e il budget attuali
-   * @param {*} credentials 
+   * @param {*} credentials username e password
    */
   const handleLogin = async (credentials) => {
     try {

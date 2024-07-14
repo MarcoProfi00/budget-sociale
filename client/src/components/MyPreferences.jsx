@@ -2,18 +2,39 @@ import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Button, Table, Alert } from 'react-bootstrap';
 import { BiArrowBack } from 'react-icons/bi';
 import { useNavigate } from 'react-router-dom';
+import { usePhase } from '../contexts/PhaseContext.jsx';
 import API from '../API';
 import '../App.css';
 
 /**
  * Componente che gestisce le preferenze espresse da un utente
- * prop: user
+ * @prop {user} prop
  */
 const MyPreferences = ({ user }) => {
   const navigate = useNavigate();
+  const { fase, getBudgetAndFase } = usePhase(); //Stati dal context per gestire budget e fase
   const [preferences, setPreferences] = useState([]); //Stato per gestire le proposte con le preferenze, inizialmente array vuoto
   const [alertMessage, setAlertMessage] = useState(null); //Stato per gestire il messaggio di errore
   const [alertVariant, setAlertVariant] = useState('success'); //Stato per gestire il colore dell'alert, inizialmente success
+  
+  /**
+   * UseEffect per recuperare fase e budget attuale
+   * Richiama la funzione getBudgetAndFase dal context
+   */
+  useEffect(() => {
+    const fetchData = async () => {
+    try {
+        await getBudgetAndFase()
+    } catch (error) {
+        console.error('Error fetching budget and fase:', error);
+        setAlertMessage('Errore nel recupero del budget e della fase');
+        setAlertVariant('danger');
+    }
+  };
+
+    fetchData(); // Chiamo la funzione all'avvio del componente
+  }, [getBudgetAndFase]);
+
   /**
    * UseEffect che recupera le proposte con le preferenze
    */
@@ -36,9 +57,19 @@ const MyPreferences = ({ user }) => {
 
   /**
    * Funzione che viene chiamata quando premo il bottone per eliminare una preferenza
+   * Controlla se la fase è diversa da 2, in caso affermativo mostra un alert di errore
    * @param {*} proposalId id della proposta di cui voglio eliminare la preferenza
    */
   const handleDeletePreference = async (proposalId) => {
+    if (fase !== 2) {
+      setAlertMessage("Fase errata! Non puoi eliminare la tua preferenza");
+      setAlertVariant('danger');
+      setTimeout(() => {
+        setAlertMessage(null);
+      }, 2000);
+      return;
+    }
+
     try {
       await API.deletePreference(user.id, proposalId); // Chiamo API per eliminare la preferenza
   
@@ -100,7 +131,8 @@ const MyPreferences = ({ user }) => {
 
 /**
  * Componente tabella delle preferenze
- * props in input: proposte con le preferenze espresse (stato),
+ * @prop {preferences, handleDeletePreference} props 
+ * preferences: array di proposte con le preferenze espresse
  * handleDeletePreference (funzione per eliminare una preferenza)
  */
 function MyPreferenceTable({ preferences, handleDeletePreference }) {

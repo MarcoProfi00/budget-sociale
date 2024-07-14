@@ -7,15 +7,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Card, Table, Alert, OverlayTrigger, Tooltip, Dropdown  } from 'react-bootstrap';
 import { usePhase } from '../contexts/PhaseContext.jsx';
 import API from '../API';
-import { WrongFaseError } from '../../../server/errors/proposalError.mjs';
+
 
 /**
  * Componente che gestisce la pagina di votazione delle proposte
- * Prop in input: user
+ * @prop {user} prop In base all'user (prop) controllo se l'utente è admin o member
  */
 const Phase2Page = ({ user }) => {
 
-  const { avanzareFase, getBudgetAndFase } = usePhase(); //Stati dal context per gestire budget e fase
+  const { fase, avanzareFase, getBudgetAndFase } = usePhase(); //Stati dal context per gestire budget e fase
   const [proposals, setProposals] = useState([]); //Stato per ottenere le proposte, inizialmente array vuoto
   const [alertMessage, setAlertMessage] = useState(null); // Stato per gestire i messaggi di alert, inizialmente null
   const [alertVariant, setAlertVariant] = useState('success'); //Stato per gestire il colore dell'alert, inizialmente success
@@ -83,10 +83,20 @@ const Phase2Page = ({ user }) => {
 
   /**
    * Funzione per votare una proposta in base al suo id
+   * Controlla se la fase è diversa da 2, in caso affermativo mostra un alert di errore
    * @param {*} proposalId id della proposta da votare
    * @param {*} score puntaggio assegnato alla proposta (da 1 a 3)
    */
   const handleVoteProposal = async(proposalId, score) => {
+    if (fase !== 2) {
+      setAlertMessage("Fase errata! Non puoi votare la proposta");
+      setAlertVariant('danger');
+      setTimeout(() => {
+        setAlertMessage(null);
+      }, 2000);
+      return;
+    }
+    
     try {
       score = parseInt(score);
       await API.voteProposal(user.id, proposalId, score);
@@ -171,6 +181,13 @@ const Phase2Page = ({ user }) => {
   );
 };
 
+/**
+ * Componente che gestisce la tabella che contiene tutte le proposte
+ * @prop {proposals, user, handleVoteProposal} props
+ * proposals: array di tutte le proposte presenti nel db
+ * user: utente loggato
+ * handleVoteProposal: funzione per votare una proposta 
+ */
 function AllProposalsTable({ proposals, user, handleVoteProposal }) {
   return (
       <Table>

@@ -10,6 +10,7 @@ import API from '../API';
 
 /**
  * Componente che gestisce la pagina della fase 3 con l'approvazione delle preferenze
+ * @prop {user} prop In base all'user (prop) controllo se l'utente è admin o member
  * Prop in input: user
  */
 const Phase3Page = ({ user }) => {

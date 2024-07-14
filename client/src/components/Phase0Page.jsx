@@ -11,7 +11,7 @@ import API from '../API';
 
 /**
  * Componente che gestisce la pagina della fase 0
- * In base alla prop user gestico il caso in cui l'utente sia admin o member
+ * @prop {user} prop In base a user gestico il caso in cui l'utente sia admin o member
  */
 const Phase0Page = ({ user }) => {
   const navigate = useNavigate(); //hook per navigare tra le pagie
@@ -37,11 +37,11 @@ const Phase0Page = ({ user }) => {
         console.error('Error fetching budget and fase:', error);
         setAlertMessage('Errore nel recupero del budget e della fase');
         setAlertVariant('danger');
-    }
-  };
+      }
+    };
 
     fetchData(); // Chiamo la funzione all'avvio del componente
-}, [getBudgetAndFase]);
+  }, [getBudgetAndFase]);
 
   /**
    * Setto lo stato del budget ogni volta che cambia l'input
@@ -65,17 +65,16 @@ const Phase0Page = ({ user }) => {
     try {
       //Controllo se è stato gia inserito un budget (non posso impostarlo due volte)
       if (alreadySetBudgetAlert) {
-        setFeedbackFromError(new Error('È possibile inserire solo un budget.'));
+        setFeedbackFromError(new Error('È possibile inserire solo un budget'));
         setShowAlert(true);
       } else {
         await API.initApp(budget); //chiamo API per inizializzare l'applicazione
         setFeedback('Budget impostato con successo');
         setSuccessAlert(true);
-        //L'alert scompare dopo 3 sec
         setTimeout(() => {
           setSuccessAlert(false);
         }, 3000);
-        setAlreadySetBudgetAlert(true);
+        setAlreadySetBudgetAlert(true); //setto AlreadySetBudgetAlert a true quando imposto un budget
         setShowAlert(false);
       }
     } catch (error) {

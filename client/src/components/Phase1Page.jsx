@@ -10,11 +10,11 @@ import API from '../API';
 
 /**
  * Componente che gestisce la pagina della fase 1
- * In base all'user (prop) controllo se l'utente è admin o member
+ * @prop {user} prop In base all'user (prop) controllo se l'utente è admin o member
  */
 const Phase1Page = ({ user }) => {
 
-  const { budget, avanzareFase, getBudgetAndFase } = usePhase(); //Stati e funzionio per fase e budget presi dal context
+  const { fase, budget, avanzareFase, getBudgetAndFase } = usePhase(); //Stati e funzionio per fase e budget presi dal context
   const [proposals, setProposals] = useState([]); //Stato per ottenere le proprie proposte inizializzato ad array vuoto
   const [alertMessage, setAlertMessage] = useState(null); // Stato per gestire i messaggi di alert inizializzato a null
   const [alertVariant, setAlertVariant] = useState('success');
@@ -78,21 +78,32 @@ const Phase1Page = ({ user }) => {
 
   /**
    * Funzione per gestire l'eliminazione di una proposta
+   * Controllo inizialmente che la fase sia 1, se non lo è mostro un alert
    * @param {*} proposalId id della proposta da eliminare
    */
   const handleDeleteProposal = async(proposalId) => {
+    if (fase !== 1) {
+      setAlertMessage("Fase errata! Non puoi eliminare la proposta");
+      setAlertVariant('danger');
+      setTimeout(() => {
+        setAlertMessage(null);
+      }, 2000);
+      return;
+    }
     try {
       await API.deleteProposal(user.id, proposalId);
       //Aggiorno la lista delle proposte dopo l'eliminazione di una proposta
       setProposals(proposals.filter((proposal) => proposal.id !== proposalId));
-      
       setAlertMessage("Proposta eliminata correttamente")
       setAlertVariant('success');
       setTimeout(() => {
         setAlertMessage(null);
-      }, 3000)
+      }, 2000)
     } catch (error) {
       console.log("Errore nell'eliminazione della proposta:", error);
+      setTimeout(() => {
+        setAlertMessage(null);
+      }, 2000)
       setAlertMessage('Errore nell\'eliminazione della proposta');
       setAlertVariant('danger');
     }
@@ -178,6 +189,11 @@ const Phase1Page = ({ user }) => {
   );
 };
 
+/**
+ * Componente che gestisce la tabella delle proprie proposte
+ * Formata da descrizione, costo e due pulsanti uno per modificare e uno per eliminare la proposta
+ * @param {proposals, handleDeleteProposal} param0 props in input: proposals (array di proposte), handleDeleteProposal (funzione per eliminare la proposta) 
+ */
 function MyProposalsTable({ proposals, handleDeleteProposal }) {
   return (
     <Table>

@@ -6,12 +6,12 @@ import { BiArrowBack } from 'react-icons/bi';
 import API from '../API';
 
 /**
- * Componente che viene renderizzato quando si vuoloe aggiungere o modificare una proposta
- * Props passate in input: proposal, mode (add o edit), user
+ * Componente che gesisce l'aggiunta o la modifica di una proposta
+ * @prop {proposal, mode, user} props Props passate in input: proposal, mode (add o edit), user
  */
 const AddEditProposalForm = ({ proposal, mode, user }) => {
     const { proposalId } = useParams(); //estrae dall'URL l'id della proposta
-    const { setFase, budget, setBudget } = usePhase(); //Stati del context per gestire fase e budget
+    const { budget, fase, getBudgetAndFase } = usePhase(); //Stati del context per gestire fase e budget
     const navigate = useNavigate(); //hook per navigare tra le pagine
     const [waiting, setWaiting] = useState(false);
     
@@ -25,6 +25,24 @@ const AddEditProposalForm = ({ proposal, mode, user }) => {
 
     // Titolo dinamico del form in base alla modalità (Add o Edit)
     const formTitle = mode === 'edit' ? 'Modifica Proposta' : 'Aggiungi Nuova Proposta';
+
+    /**
+     * UseEffect per recuperare fase e budget attuale
+     * Richiama la funzione getBudgetAndFase dal context
+     */
+    useEffect(() => {
+      const fetchData = async () => {
+      try {
+          await getBudgetAndFase()
+      } catch (error) {
+          console.error('Error fetching budget and fase:', error);
+          setAlertMessage('Errore nel recupero del budget e della fase');
+          setAlertVariant('danger');
+      }
+  };
+  
+      fetchData(); // Chiamo la funzione all'avvio del componente
+  }, [getBudgetAndFase]);
 
     /**
      * UseEffect per recuperare i dettagli della proposta
@@ -49,8 +67,11 @@ const AddEditProposalForm = ({ proposal, mode, user }) => {
     
     /**
      * Funzione che gestisce l'invio del form
+     * Controlla le validazioni degli input e in che fase ci si trova
      */
     const handleSubmit = async (event) => {
+      
+      
         event.preventDefault(); //permette la submission
 
         // Controllo se la descrizione è troppo lunga
@@ -79,21 +100,36 @@ const AddEditProposalForm = ({ proposal, mode, user }) => {
         //Controllo se il costo della proposta è positivo
         if(cost <= 0) {
           setAlertVariant('danger');
-          setAlertMessage('Il costo della proposta deve essere maggiore di 0')
-          return
+          setAlertMessage('Il costo della proposta deve essere maggiore di 0');
+          return;
         }
 
         setWaiting(true);
     
         try {
+          if (fase !== 1) {
+            setAlertMessage("Fase errata! Non puoi aggiungere o modificare proposte");
+            setAlertVariant('danger');
+            setTimeout(() => {
+              setAlertMessage(null);
+            }, 2000);
+            return;
+          }
+
           if (mode === 'edit') {
             await API.updateProposal({ id: proposalId, ...newProposal }); //In input passo un oggetto che contiene l'id della proposta e le nuove nuove informazioni
             setAlertVariant('success');
             setAlertMessage('Proposta aggiornata correttamente.');
+            setTimeout(() => {
+              setAlertMessage(null);
+            }, 2000);
           } else {
             await API.addProposal(newProposal);
             setAlertVariant('success');
             setAlertMessage('Proposta aggiunta correttamente.');
+            setTimeout(() => {
+              setAlertMessage(null);
+            }, 2000);
           }
     
           setTimeout(() => {
@@ -102,7 +138,10 @@ const AddEditProposalForm = ({ proposal, mode, user }) => {
           }, 1000);
         } catch (error) {
           console.error('Error:', error);
-          setAlertMessage('Si è verificato un errore durante l\'operazione.');
+          setAlertMessage('Si è verificato un errore durante l\'operazione');
+          setTimeout(() => {
+            setAlertMessage(null);
+          }, 2000);
           setWaiting(false);
         }
     };

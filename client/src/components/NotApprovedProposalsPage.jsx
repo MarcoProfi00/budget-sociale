@@ -10,7 +10,7 @@ import API from '../API';
 
 /**
  * Componente che descrive la tabella delle proposte non approvate
- * Props in input: user
+ * @prop {user} prop In base all'user (prop) controllo se l'utente è loggato o meno
  */
 const NotApprovedProposalsPage = ({ user }) => {
 
@@ -86,7 +86,7 @@ const NotApprovedProposalsPage = ({ user }) => {
 
 /**
  * Componente che descrive la tabella delle proposte non approvate
- * Props in input: notApprovedProposals (stato)
+ * @prop {notApprovedProposals}
  */
 function NotApprovedProposalsTable({ notApprovedProposals }){
     return(
