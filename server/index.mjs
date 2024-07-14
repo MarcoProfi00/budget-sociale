@@ -11,17 +11,17 @@ import session from 'express-session'; //middleware per gestire le sessioni in E
 import cors from 'cors';
 import BudgetSociale from './components/BudgetSociale.mjs';
 
-//istanze dei DAO
+//Istanze dei DAO
 const proposalDAO = new ProposalDAO();
 const userDAO = new UserDAO();
 
-// init express and set up the middlewares
+//Inizializzazione express
 const app = new express();
 
 app.use(morgan('dev'));
 app.use(express.json());
 
-/** Set up and enable Cross-Origin Resource Sharing (CORS) **/
+/** Set up and abilitazione di CORS **/
 const corsOptions = {
   origin: 'http://localhost:5173',
   credentials: true
@@ -192,7 +192,7 @@ app.put('/api/nextfase', isLoggedIn, async (req, res) => {
 })
 
 /** Proposal APIs **/
-/** FASE 1 **/
+/*** FASE 1 ***/
 
 /**
  * Get di tutte le proposta di un utente dato il suo id
@@ -312,7 +312,7 @@ app.delete('/api/proposals/:id', isLoggedIn, async(req, res) => {
   }
 })
 
-/** FASE 2 **/
+/*** FASE 2 ***/
 /**
  * Get di tutte le proposte presenti nel db
  * GET /api/proposals
@@ -401,7 +401,7 @@ app.delete('/api/proposals/voted/delete/:id', isLoggedIn, async(req, res) => {
   }
 });
 
-/** FASE 3 **/
+/*** FASE 3 ***/
 /**
  * Ordina le proposte in base al total_score in ordine decrescente (API intermedia per l'approvazione)
  * GET /api/proposal/ordered
@@ -503,6 +503,6 @@ app.delete('/api/proposal/restart', isLoggedIn, async(req, res) => {
   }
 })
 
-// Attivazione del server
+//Attivazione del server
 const PORT = 3001;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}/`));

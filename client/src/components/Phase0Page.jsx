@@ -57,7 +57,7 @@ const Phase0Page = ({ user }) => {
     e.preventDefault(); //permette la submission
 
     if (budget === '') {
-      setFeedbackFromError(new Error('È necessario inserire un budget.'));
+      setFeedbackFromError(new Error('È necessario inserire un budget'));
       setShowAlert(true);
       return;
     }
@@ -73,7 +73,7 @@ const Phase0Page = ({ user }) => {
         setSuccessAlert(true);
         setTimeout(() => {
           setSuccessAlert(false);
-        }, 3000);
+        }, 2000);
         setAlreadySetBudgetAlert(true); //setto AlreadySetBudgetAlert a true quando imposto un budget
         setShowAlert(false);
       }
@@ -93,7 +93,7 @@ const Phase0Page = ({ user }) => {
       setShowBudgetAlert(true);
       setTimeout(() => {
         setShowBudgetAlert(false);
-      }, 3000);
+      }, 2000);
       return;
     }
 

@@ -8,10 +8,9 @@ const PhaseContext = React.createContext();
 export const usePhase = () => useContext(PhaseContext);
 
 /**
- * Componente per gestire e inizializzare lo stato dell'applicazione:
- * useState per gestire lo stato della fase
- * useEffect per inizializzarlo utilizzando l'API getPhase al momento del montaggio.
- * children: prop (componenti figli)
+ * Componente per gestire e inizializzare lo stato dell'applicazione.
+ * Gestisce il budget e la fase e le loro API per inizializzare, avanzare e ritornare budget e fase.
+ * @prop {children} prop componenti figli del context. Da App.jsx in poi
  */
 export const PhaseProvider = ({ children }) => {
   

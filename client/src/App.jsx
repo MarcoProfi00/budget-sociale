@@ -91,18 +91,52 @@ function App() {
           <Header logout={handleLogout} user={user} loggedIn={loggedIn} />
           <Container fluid className="flex-grow-1 d-flex flex-column">
             <Routes>
+              
               {/* Se è loggato naviga verso first page altimenti LoginForm */}
-              <Route path="/login" element={loggedIn ? <Navigate replace to="/" /> : <LoginForm login={handleLogin} />} />
-              <Route path="/setbudget" element={<Phase0Page user={user} />} />
-              <Route path="/myproposals" element={<Phase1Page user={user} />} />
-              <Route path="/addproposal" element={<AddEditProposalForm user={user} mode="add" />} />
-              <Route path="/editproposal/:proposalId" element={<AddEditProposalForm user={user} mode="edit" />} />
-              <Route path="/allproposals" element={<Phase2Page user={user}/>} />
-              <Route path="/mypreferences" element={<MyPreferences user={user} />} />
-              <Route path="/approvedproposals" element={<Phase3Page user={user} />} />
-              <Route path="/notapprovedproposals" element={<NotApprovedProposalsPage user={user} />} />
-              <Route path="/notlogged" element={<NotLoggedPage />} />
-              <Route path="*" element={<NotFoundLayout user={user}/>} />
+              <Route path="/login" 
+                element={loggedIn ? <Navigate replace to="/" /> : <LoginForm login={handleLogin} />} 
+              />
+              
+              <Route path="/setbudget" 
+                element={<Phase0Page user={user} />} 
+              />
+              
+              <Route path="/myproposals" 
+                element={<Phase1Page user={user} />} 
+              />
+              
+              <Route path="/addproposal" 
+                element={<AddEditProposalForm user={user} mode="add" />} 
+              />
+              
+              <Route path="/editproposal/:proposalId" 
+                element={<AddEditProposalForm user={user} mode="edit" />} 
+              />
+              
+              <Route path="/allproposals" 
+                element={<Phase2Page user={user}/>} 
+              />
+              
+              <Route path="/mypreferences" 
+                element={<MyPreferences user={user} />} 
+              />
+              
+              <Route path="/approvedproposals" 
+                element={<Phase3Page user={user} />} 
+              />
+              
+              <Route path="/notapprovedproposals" 
+                element={<NotApprovedProposalsPage user={user} />} 
+              />
+              
+              <Route path="/notlogged" 
+                element={<NotLoggedPage />} 
+              />
+              
+              <Route path="*" 
+                element={<NotFoundLayout user={user}/>} 
+              />
+              
               <Route
                 path="/"
                 element={//Controllo se l'utente è loggato, naviga alla pagina in base alla fase
@@ -117,7 +151,9 @@ function App() {
                   )
                 }
               />
+
             </Routes>
+            
           </Container>
         </div>
     </FeedbackContext.Provider>

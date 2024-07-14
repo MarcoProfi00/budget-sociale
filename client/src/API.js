@@ -274,10 +274,10 @@ async function restartProcess(userId) {
 
 /**
  * Verifica la validità delle risposte HTTP e si assicura che sia un oggetto json
- *  Controlla se la risposta ha uno status di successo
- *  Recupera l'header Content-Type della risposta
- *  Controlla se il tipo di contenuto è JSON
- *  Se il controllo va a buon fine restituisce la risposta
+ * Controlla se la risposta ha uno status di successo
+ * Recupera l'header Content-Type della risposta
+ * Controlla se il tipo di contenuto è JSON
+ * Se il controllo va a buon fine restituisce la risposta
  */
 function handleInvalidResponse(response) {
     if (!response.ok) { throw Error(response.statusText) }

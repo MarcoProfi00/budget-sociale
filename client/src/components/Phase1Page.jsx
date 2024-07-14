@@ -34,7 +34,7 @@ const Phase1Page = ({ user }) => {
             setAlertVariant('danger');
         }
     };
-    
+
         fetchData(); // Chiamo la funzione all'avvio del componente
     }, [getBudgetAndFase]);
     
@@ -62,7 +62,7 @@ const Phase1Page = ({ user }) => {
   }, [user]);
 
   /**
-   * Funzione chiamata quando premo  il pulstante per passare alla fase 2"
+   * Funzione chiamata quando premo il pulstante per passare alla fase 2
    * Chiama avanzareFase() per impostare la fase da 0 a 1
    * Naviga alla Phase2Page
    */
