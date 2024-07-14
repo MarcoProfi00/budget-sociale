@@ -364,7 +364,7 @@
 
 ## Database Tables
 
-- Table `Users` - contiene gli utenti presenti nel database. E' formata da: id (chiave primaria), name, surname, role, username(email), password, salt
+- Table `User` - contiene gli utenti presenti nel database. E' formata da: id (chiave primaria), name, surname, role, username(email), password, salt
 - Table `Proposal` - contiene le proposte presenti nel database. E' formata da: id (chiave primaria), user_id (chiave esterna), description, cost, approved
 - Table `Vote` - tabella usata per legare la relazione tra User e Proposal, contiene user_id, proposal_id (chiavi esterne, la cui coppia è chiave primaria) e l'attributo score che indica il punteggio dato dall'utente
 - Table `BudgetSociale` - tabella degenere che contiene una sola istanza. E' formata da id, amount (budget) e la fase corrente (current_fase)
