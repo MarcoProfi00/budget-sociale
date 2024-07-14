@@ -221,7 +221,7 @@
     }
   ]
   ```
- - Error responses: `500 Internal Server Error` (generic error), `404 User has not voted on any proposal` (Vote Not Found), `401 Unauthorized` (Unauthorized user - Not Logged)
+  - Error responses: `500 Internal Server Error` (generic error), `404 User has not voted on any proposal` (Vote Not Found), `401 Unauthorized` (Unauthorized user - Not Logged)
 
 - DELETE `/api/proposals/voted/delete/:id`
   - Description: Elimina la preferenza espressa precedentemente da un determinato utente
