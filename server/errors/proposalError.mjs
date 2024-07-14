@@ -1,5 +1,5 @@
 /**
- * Gestisce gli errori delle proposte
+ * Classe che gestisce gli errori
  */
 const PROPOSALS_NOT_FOUND = "Proposals not found"
 const PROPOSALS_ALREADY_EXISTS = "Proposal already exists"

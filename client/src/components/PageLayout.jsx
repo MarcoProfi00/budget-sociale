@@ -1,7 +1,9 @@
 import {Col, Row} from "react-bootstrap";
 import {Link} from "react-router-dom";
 
-
+/**
+ * Gestisce il NotFoundLayout (pagine diverse da quelle espresse nelle route)
+ */
 export function NotFoundLayout() {
     return (
         <>

@@ -4,8 +4,8 @@ import '../App.css';
 
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Container, Row, Col, Button, Card, Table, Alert, OverlayTrigger, Tooltip, Dropdown  } from 'react-bootstrap';
-import { PhaseProvider, usePhase } from '../contexts/PhaseContext.jsx';
+import { Container, Row, Col, Button, Card, Table, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { usePhase } from '../contexts/PhaseContext.jsx';
 import API from '../API';
 
 /**
@@ -15,7 +15,7 @@ import API from '../API';
  */
 const Phase3Page = ({ user }) => {
     
-    const { budget, getBudgetAndFase } = usePhase(); //Stati per gestire fase e budget
+    const { budget, getBudgetAndFase } = usePhase(); //Stati e funzioni del context per gestire fase e budget
     const [approvedProposals, setApprovedProposals] = useState([]); //Stato per gestire le proposte approvate, inizialmente array vuoto
     const [alertMessage, setAlertMessage] = useState(null); // Stato per gestire i messaggi di alert, inizialmente null
     const navigate = useNavigate(); //Hook per gestire la navigazione
@@ -76,7 +76,6 @@ const Phase3Page = ({ user }) => {
             setShowAlert(true);
         }
     }
-
 
     return (
         <Container fluid className="gap-3 align-items-center">
@@ -147,7 +146,7 @@ const Phase3Page = ({ user }) => {
 
 /**
  * Componente per visualizzare le proposte Approvate
- * Props in input: approvedProposals
+ * @prop { approvedProposals } prop array delle proposte approvate
  */
 function ApprovedProposalsTable({ approvedProposals }){
     return(

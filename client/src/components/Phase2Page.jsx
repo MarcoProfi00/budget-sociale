@@ -15,11 +15,11 @@ import API from '../API';
  */
 const Phase2Page = ({ user }) => {
 
-  const { fase, avanzareFase, getBudgetAndFase } = usePhase(); //Stati dal context per gestire budget e fase
+  const { fase, avanzareFase, getBudgetAndFase } = usePhase(); //Stati e funzioni del context per gestire budget e fase
   const [proposals, setProposals] = useState([]); //Stato per ottenere le proposte, inizialmente array vuoto
   const [alertMessage, setAlertMessage] = useState(null); // Stato per gestire i messaggi di alert, inizialmente null
   const [alertVariant, setAlertVariant] = useState('success'); //Stato per gestire il colore dell'alert, inizialmente success
-  const navigate = useNavigate(); //hook per navigare tra le pagine
+  const navigate = useNavigate(); //Hook per navigare tra le pagine
 
   const setFeedbackFromError = (error) => {
       setFeedback(error.message);
@@ -111,7 +111,7 @@ const Phase2Page = ({ user }) => {
       setAlertVariant('danger');
       setTimeout(() => {
         setAlertMessage(null);
-      }, 3000);
+      }, 2000);
       console.log(error)
     }
   }

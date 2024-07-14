@@ -1,7 +1,6 @@
 /**
  * Data Access Object (DAO) module for accessing user data
  */
-
 import db from "../db/db.mjs"
 import crypto from 'crypto';
 import { UserNotFoundError } from "../errors/userError.mjs";
@@ -211,4 +210,5 @@ export default function UserDAO() {
             })            
         })
     }
+    
 }

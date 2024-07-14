@@ -1,7 +1,6 @@
 /**
  * Data Access Object (DAO) module for accessing proposal data
  */
-
 import Proposal, { ProposalWithVote, ProposalsApproved, ProposalsNotApproved, ProposalsWhithSumOfScore } from "../components/Proposal.mjs";
 import db from "../db/db.mjs"
 import { ProposalOverToBudgetError, ProposalsNotFoundError, ProposalAlreadyExistsError, VoteSameProposalError, AlreadyThreeProposalsError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError, WrongFaseError, BudgetNotExistError } from "../errors/proposalError.mjs";
@@ -345,8 +344,7 @@ export default function ProposalDAO() {
                         })
                     }
                 }
-            })
-            
+            })    
         })
     }
 
@@ -390,10 +388,10 @@ export default function ProposalDAO() {
 
     /**
      * Approva le proposte in base al budget
-     *  Recupera il budget dalla tabella BudgetSociale
-     *  Richiama la promise "getProposalsOrderedToScore" in await per ordinare le proposte secondo il total_score in ordine decrescente
-     *  Crea una transaction dove in un ciclo for viene aggiornato il campo approved delle proposte che rientrano nel budget
-     *  Se avviene un errore durante l'aggiornamento, la transazione viene annullata con un rollback
+     * Recupera il budget dalla tabella BudgetSociale
+     * Richiama la promise "getProposalsOrderedToScore" in await per ordinare le proposte secondo il total_score in ordine decrescente
+     * Crea una transaction dove in un ciclo for viene aggiornato il campo approved delle proposte che rientrano nel budget
+     * Se avviene un errore durante l'aggiornamento, la transazione viene annullata con un rollback
      * @returns La promise si risolve ritornando true se l'approvazione va a buon fine
      */
     this.approveProposals = () => {

@@ -14,8 +14,8 @@ import API from '../API';
  */
 const Phase1Page = ({ user }) => {
 
-  const { fase, budget, avanzareFase, getBudgetAndFase } = usePhase(); //Stati e funzionio per fase e budget presi dal context
-  const [proposals, setProposals] = useState([]); //Stato per ottenere le proprie proposte inizializzato ad array vuoto
+  const { fase, budget, avanzareFase, getBudgetAndFase } = usePhase(); //Stati e funzioni del context per gestire fase e budget
+  const [proposals, setProposals] = useState([]); //Stato per gestire le proprie proposte inizializzato ad array vuoto
   const [alertMessage, setAlertMessage] = useState(null); // Stato per gestire i messaggi di alert inizializzato a null
   const [alertVariant, setAlertVariant] = useState('success');
   const navigate = useNavigate(); //Hook per navigare tra le pagine
@@ -40,7 +40,7 @@ const Phase1Page = ({ user }) => {
     
 
   /**
-   * UseEffect per gestire il recupero delle proposte dato l'user
+   * UseEffect per gestire il recupero delle proposte dato l'userId
    * Se l'utente esiste (user) chiamo l'API per ottenere le sue proposte e le imposto,
    * altrimenti imposto lo stato a array vuoto
    */
@@ -63,7 +63,7 @@ const Phase1Page = ({ user }) => {
 
   /**
    * Funzione chiamata quando premo il pulstante per passare alla fase 2
-   * Chiama avanzareFase() per impostare la fase da 0 a 1
+   * Chiama avanzareFase() dal context per impostare la fase da 0 a 1
    * Naviga alla Phase2Page
    */
   const handlePassaFase2 = async () => {
@@ -192,7 +192,7 @@ const Phase1Page = ({ user }) => {
 /**
  * Componente che gestisce la tabella delle proprie proposte
  * Formata da descrizione, costo e due pulsanti uno per modificare e uno per eliminare la proposta
- * @param {proposals, handleDeleteProposal} param0 props in input: proposals (array di proposte), handleDeleteProposal (funzione per eliminare la proposta) 
+ * @prop {proposals, handleDeleteProposal} props in input: proposals (array di proposte), handleDeleteProposal (funzione per eliminare la proposta) 
  */
 function MyProposalsTable({ proposals, handleDeleteProposal }) {
   return (

@@ -5,7 +5,7 @@ import '../App.css';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Container, Row, Col, Card } from 'react-bootstrap';
-import { usePhase } from '../contexts/PhaseContext'; // Importa il contesto di fase
+import { usePhase } from '../contexts/PhaseContext';
 
 /**
  * Componente che gestisce la pagina dell'utente non loggato
@@ -14,7 +14,7 @@ const NotLoggedPage = () => {
   const { fase } = usePhase(); //Stato dal PhaseContext
   const navigate = useNavigate(); //hook per navigare tra le pagine
 
-  //Effetto per gestire il reindirizzamento basato sulla fase
+  //UseEffect per gestire il reindirizzamento basato sulla fase
   useEffect(() => {
     if (fase === 3) {
       navigate('/approvedproposals');

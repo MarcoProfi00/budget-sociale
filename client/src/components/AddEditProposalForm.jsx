@@ -10,13 +10,14 @@ import API from '../API';
  * @prop {proposal, mode, user} props Props passate in input: proposal, mode (add o edit), user
  */
 const AddEditProposalForm = ({ proposal, mode, user }) => {
-    const { proposalId } = useParams(); //estrae dall'URL l'id della proposta
+    const { proposalId } = useParams(); //Hook per estrarre dall'URL l'id della proposta
     const { budget, fase, getBudgetAndFase } = usePhase(); //Stati del context per gestire fase e budget
-    const navigate = useNavigate(); //hook per navigare tra le pagine
-    const [waiting, setWaiting] = useState(false);
+    const navigate = useNavigate(); //Hook per navigare tra le pagine
+    const [waiting, setWaiting] = useState(false); //Stato per l'attesa durante l'invio di un form
     
     // Stato che contiene la description della proposta (se esiste), altrimenti stringa vuota
     const [description, setDescription] = useState(proposal ? proposal.description : '');
+    
     // Stato che contiene il cost della proposta (se esiste), altrimenti 0
     const [cost, setCost] = useState(proposal ? proposal.cost : 0);
     
@@ -104,7 +105,7 @@ const AddEditProposalForm = ({ proposal, mode, user }) => {
           return;
         }
 
-        setWaiting(true);
+        setWaiting(true); //Attendo l'operazione e il bottone si disattiva temporaneamente
     
         try {
           if (fase !== 1) {
@@ -134,8 +135,8 @@ const AddEditProposalForm = ({ proposal, mode, user }) => {
     
           setTimeout(() => {
             setAlertMessage(null);
-            navigate('/myproposals'); // Naviga alla pagina delle proprie proposte dopo 3 sec
-          }, 1000);
+            navigate('/myproposals'); // Naviga alla pagina delle proprie proposte dopo 2 sec
+          }, 2000);
         } catch (error) {
           console.error('Error:', error);
           setAlertMessage('Si è verificato un errore durante l\'operazione');

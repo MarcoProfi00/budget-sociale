@@ -21,12 +21,12 @@ import NotApprovedProposalsPage from './components/NotApprovedProposalsPage.jsx'
 import NotLoggedPage from './components/NotLoggedPage.jsx';
 
 /**
- * Componente che gestisce l'applicazione principale
+ * Componente che gestisce l'applicazione principale e le sue route
  */
 function App() {
   
   const [user, setUser] = useState(null); //Stato per gesire l'utente
-  const [loggedIn, setLoggedIn] = useState(false); //Stato per indicare se l'utente è loggato
+  const [loggedIn, setLoggedIn] = useState(false); //Stato per indicare se l'utente è loggato, inizialmente false
   const { setFeedback, setFeedbackFromError } = useContext(FeedbackContext); //Stato per i messaggi di feedback
   const { fase, getBudgetAndFase } = usePhase(); //Stati ottenuti dal contesto PhaseContext per gestire fase corrente e budget
 
@@ -153,7 +153,7 @@ function App() {
               />
 
             </Routes>
-            
+
           </Container>
         </div>
     </FeedbackContext.Provider>

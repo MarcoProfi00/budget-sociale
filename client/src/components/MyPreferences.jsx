@@ -12,7 +12,7 @@ import '../App.css';
  */
 const MyPreferences = ({ user }) => {
   const navigate = useNavigate();
-  const { fase, getBudgetAndFase } = usePhase(); //Stati dal context per gestire budget e fase
+  const { fase, getBudgetAndFase } = usePhase(); //Stati e funzioni dal context per gestire budget e fase
   const [preferences, setPreferences] = useState([]); //Stato per gestire le proposte con le preferenze, inizialmente array vuoto
   const [alertMessage, setAlertMessage] = useState(null); //Stato per gestire il messaggio di errore
   const [alertVariant, setAlertVariant] = useState('success'); //Stato per gestire il colore dell'alert, inizialmente success

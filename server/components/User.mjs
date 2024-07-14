@@ -1,4 +1,3 @@
-
 /**
  * Costruttore di User
  * @param {*} id id dell'utente

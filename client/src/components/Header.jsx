@@ -4,6 +4,9 @@ import { LogoutButton, LoginButton } from './Auth';
 import { Link } from 'react-router-dom';
 import '../App.css';
 
+/**
+ * Componente che gestisce l'header dell'applicazione
+ */
 function Header(props) {
     return (
         <header className="py-1 py-md-3 border-bottom dark-green-bg">

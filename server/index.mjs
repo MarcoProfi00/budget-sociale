@@ -1,13 +1,13 @@
 import express from 'express';
 import morgan from 'morgan';
-import {check, validationResult} from 'express-validator'; // validation middleware
+import {check, validationResult} from 'express-validator';
 import ProposalDAO from "./dao/proposalDAO.mjs";
 import Proposal, { Vote } from './components/Proposal.mjs';
 import { ProposalOverToBudgetError, WrongFaseError, BudgetNotExistError, FaseError, NotAdminError, NotAdminErrorBudget, ProposalAlreadyExistsError, ProposalsNotFoundError, UnauthorizedUserError, UnauthorizedUserErrorVote, VoteNotFoundError, AlreadyThreeProposalsError } from './errors/proposalError.mjs';
 import UserDAO from './dao/userDAO.mjs';
 import passport from 'passport';
 import LocalStrategy from 'passport-local';
-import session from 'express-session'; //middleware per gestire le sessioni in Express.
+import session from 'express-session';
 import cors from 'cors';
 import BudgetSociale from './components/BudgetSociale.mjs';
 
@@ -28,12 +28,12 @@ const corsOptions = {
 };
 app.use(cors(corsOptions))
 
-/** Passport **/
 
+/** Passport **/
 /**
- * Funzione per trovare user con credenziali fornite
- * Se non viene trovato alcun utente, la funzione ritorna un callback con false e un messaggio di errore.
- * Se l'utente viene trovato, viene restituito al callback. Le informazioni dell'utente saranno memorizzate nella sessione.
+ * Funzione per trovare l'user con le credenziali fornite
+ * Se non viene trovato alcun utente, la funzione ritorna un callback con false e un messaggio di errore
+ * Se l'utente viene trovato, viene restituito al callback. Le informazioni dell'utente saranno memorizzate nella sessione
  */
 passport.use(new LocalStrategy(async function verify(username, password, callback){
   const user = await userDAO.getUserByCredentials(username, password)
@@ -45,7 +45,7 @@ passport.use(new LocalStrategy(async function verify(username, password, callbac
 
 /**
  * Serializzazione dell'utente nella sessione
- * serializeUser: Questa funzione prende l'oggetto utente restituito dalla strategia locale e lo memorizza nella sessione.
+ * serializeUser: Questa funzione prende l'oggetto utente restituito dalla strategia locale e lo memorizza nella sessione
  */
 passport.serializeUser(function (user, callback) {
   callback(null, user)
@@ -56,7 +56,7 @@ passport.serializeUser(function (user, callback) {
  * Partendo dai dati in sessione, estraiamo il corrente utente loggato
  */
 passport.deserializeUser(function (user, callback) {
-  return callback(null, user); // this will be available in req.user
+  return callback(null, user);
 });
 
 /**
@@ -65,13 +65,13 @@ passport.deserializeUser(function (user, callback) {
 app.use(session({
     secret: "This is a very secret information used to initialize the session!",
     resave: false, //Impedisce di salvare la sessione se non ci sono state modifiche.
-    saveUninitialized: false, // Impedisce di salvare una sessione vuota.
+    saveUninitialized: false, //Impedisce di salvare una sessione vuota.
 }));
 
 app.use(passport.authenticate('session'));
 
 /**
- * Defining authentication verification middleware
+ * Autenticazione con verification middleware
  */
 const isLoggedIn = (req, res, next) => {
   if(req.isAuthenticated()) {
@@ -81,9 +81,8 @@ const isLoggedIn = (req, res, next) => {
 }
 
 /** Users APIs **/
-
 /**
- * Route usata per fare il login
+ * Route usata per eseguire il login
  * POST /api/sessions
  */
 app.post('/api/sessions', function(req, res, next) {
@@ -91,22 +90,22 @@ app.post('/api/sessions', function(req, res, next) {
     if(err)
       return next(err);
       if(!user) {
-        // display wrong login messages
+        //messaggio di errore login
         return res.status(401).json({ error: info });
       }
-      // success, perform the login and extablish a login session
+      //esegue la login e stabilisce la sessione
       req.login(user, (err) => {
         if (err)
           return next(err);
 
-        // req.user contiene l'user autenticato, inviamo indietro le info dello user
+        // req.user contiene le info dell'user autenticato
         return res.json(req.user);
       })
   })(req, res, next);
 });
 
 /**
- * Route controlla se l'utente è loggato o meno
+ * Route che controlla se l'utente è loggato o meno
  * GET /api/sessions/current
  */
 app.get('/api/sessions/current', (req, res) => {
@@ -117,7 +116,7 @@ app.get('/api/sessions/current', (req, res) => {
 });
 
 /**
- * Route per loggin out
+ * Route per logout
  * DELETE /api/session/current
  */
 app.delete('/api/sessions/current', (req, res) => {

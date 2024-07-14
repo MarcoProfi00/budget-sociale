@@ -1,5 +1,5 @@
 /**
- * Gestisce gli errori dell'user
+ * Classe che gestisce gli errori dell'user
  */
 const USER_NOT_FOUND = "User Not Found"
 

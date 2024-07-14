@@ -86,7 +86,7 @@ const NotApprovedProposalsPage = ({ user }) => {
 
 /**
  * Componente che descrive la tabella delle proposte non approvate
- * @prop {notApprovedProposals}
+ * @prop { notApprovedProposals } prop array delle proposte approvate
  */
 function NotApprovedProposalsTable({ notApprovedProposals }){
     return(

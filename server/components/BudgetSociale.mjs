@@ -1,4 +1,3 @@
-
 /**
  * Costruttore di BudgetSociale
  * @param {*} id id del budget

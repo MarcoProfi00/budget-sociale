@@ -14,8 +14,8 @@ import API from '../API';
  * @prop {user} prop In base a user gestico il caso in cui l'utente sia admin o member
  */
 const Phase0Page = ({ user }) => {
-  const navigate = useNavigate(); //hook per navigare tra le pagie
-  const { avanzareFase, getBudgetAndFase } = usePhase(); //Stati per la fase presi dela context
+  const navigate = useNavigate(); //hook per navigare tra le pagine
+  const { avanzareFase, getBudgetAndFase } = usePhase(); //Funzioni prese dal context per gestire la fase
   const { setFeedback, setFeedbackFromError } = useContext(FeedbackContext); //Stato per i feedback presi dal context
   const [budget, setBudget] = useState(''); //Stato per il budget inizializzato a stringa vuota
   const [showBudgetAlert, setShowBudgetAlert] = useState(false);
@@ -86,7 +86,7 @@ const Phase0Page = ({ user }) => {
   /**
    * Funzione per passare alla fase successiva (pulsante fase1)
    * Chiamo la funzione per avanzare di fase dal context
-   * Navigo verso myproposals (Phase1Page)
+   * Navigo verso la Phase1Page
    */
   const handlePassaFase1 = async () => {
     if(!budget) {

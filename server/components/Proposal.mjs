@@ -1,4 +1,3 @@
-
 /**
  * Costruttore di Proposal
  * @param {*} id id della proposta
