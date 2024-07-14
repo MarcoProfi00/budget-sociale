@@ -24,6 +24,8 @@ const Phase0Page = ({ user }) => {
   const [showAlert, setShowAlert] = useState(false);
   const [alreadySetBudgetAlert, setAlreadySetBudgetAlert] = useState(false);
   const [successAlert, setSuccessAlert] = useState(false);
+  const [alertVariant, setAlertVariant] = useState('danger'); // Stato per l'alert inizialmente rosso
+  const [alertMessage, setAlertMessage] = useState(null); //Stato per il messaggio inizialmente null
 
   /**
    * UseEffect per recuperare fase e budget attuale
@@ -58,6 +60,13 @@ const Phase0Page = ({ user }) => {
 
     if (budget === '') {
       setFeedbackFromError(new Error('È necessario inserire un budget'));
+      setShowAlert(true);
+      return;
+    }
+
+    if (budget <= 0) {
+      setAlertMessage('Il budget deve essere superiore a 0');
+      setAlertVariant('danger');
       setShowAlert(true);
       return;
     }
@@ -139,7 +148,6 @@ const Phase0Page = ({ user }) => {
                 <InputGroup.Text>€</InputGroup.Text>
                 <Form.Control
                   type="number"
-                  min={0}
                   placeholder="Enter budget"
                   value={budget}
                   onChange={handleBudgetChange}
@@ -190,7 +198,7 @@ const Phase0Page = ({ user }) => {
       </Alert>
       
       <Alert variant="danger" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
-        {alreadySetBudgetAlert ? "È possibile inserire un solo budget." : "Errore nell'impostare il budget."}
+        {alreadySetBudgetAlert ? "È possibile inserire un solo budget." : alertMessage || "Errore nell'impostare il budget."}
       </Alert>
     </Container>
   );
